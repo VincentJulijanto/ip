@@ -18,8 +18,8 @@ public class Bit {
         System.out.println(LINE);
 
         String[] desc = new String[100];
-        String[] type = new String[100];   // "T", "D", "E"
-        String[] extra = new String[100];  // "", " (by: ...)", " (from: ... to: ...)"
+        String[] type = new String[100];
+        String[] extra = new String[100];
         boolean[] isDone = new boolean[100];
         int count = 0;
 
@@ -182,8 +182,8 @@ public class Bit {
                 }
 
                 String d = rest.substring(0, fromPos).trim();
-                String from = rest.substring(fromPos + 7, toPos).trim(); // after " /from "
-                String to = rest.substring(toPos + 5).trim();            // after " /to "
+                String from = rest.substring(fromPos + 7, toPos).trim();
+                String to = rest.substring(toPos + 5).trim();
 
                 if (d.isEmpty()) {
                     System.out.println(LINE);
@@ -212,7 +212,6 @@ public class Bit {
                 continue;
             }
 
-            // Backward compatible: ANY random text = ToDo
             type[count] = "T";
             desc[count] = input;
             extra[count] = "";
