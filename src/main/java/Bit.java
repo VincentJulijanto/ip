@@ -90,7 +90,8 @@ public class Bit {
                 continue;
             }
 
-            if (command.startsWith("todo")) {
+            // TODO
+            if (command.equals("todo") || command.startsWith("todo ")) {
                 String d = input.substring(4).trim();
                 if (d.isEmpty()) {
                     System.out.println(LINE);
@@ -113,7 +114,8 @@ public class Bit {
                 continue;
             }
 
-            if (command.startsWith("deadline")) {
+            // DEADLINE
+            if (command.equals("deadline") || command.startsWith("deadline ")) {
                 String rest = input.substring(8).trim();
                 if (rest.isEmpty()) {
                     System.out.println(LINE);
@@ -161,7 +163,7 @@ public class Bit {
             }
 
             // EVENT
-            if (command.startsWith("event")) {
+            if (command.equals("event") || command.startsWith("event ")) {
                 String rest = input.substring(5).trim();
                 if (rest.isEmpty()) {
                     System.out.println(LINE);
@@ -212,16 +214,9 @@ public class Bit {
                 continue;
             }
 
-            type[count] = "T";
-            desc[count] = input;
-            extra[count] = "";
-            isDone[count] = false;
-            count++;
-
+            // UNKNOWN COMMAND
             System.out.println(LINE);
-            System.out.println("Got it. I've added this task:");
-            System.out.println("  [T][ ] " + input);
-            System.out.println("Now you have " + count + " tasks in the list.");
+            System.out.println("OOPS!!! I'm sorry, but I don't know what that means :-(");
             System.out.println(LINE);
         }
 
