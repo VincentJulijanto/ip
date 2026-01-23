@@ -33,34 +33,11 @@ public class Bit {
                 continue;
             }
 
-            if (command.startsWith("read ")) {
-                String desc = input.substring(5).trim();
-                String task = "read " + desc;
-
-                tasks[count] = task;
-                count++;
-
-                System.out.println(LINE);
-                System.out.println("added: " + task);
-                System.out.println(LINE);
-                continue;
-            }
-
-            if (command.startsWith("return ")) {
-                String desc = input.substring(7).trim();
-                String task = "return " + desc;
-
-                tasks[count] = task;
-                count++;
-
-                System.out.println(LINE);
-                System.out.println("added: " + task);
-                System.out.println(LINE);
-                continue;
-            }
+            tasks[count] = input;
+            count++;
 
             System.out.println(LINE);
-            System.out.println("  " + input);
+            System.out.println("added: " + input);
             System.out.println(LINE);
         }
 
