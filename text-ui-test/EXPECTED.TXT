@@ -10,19 +10,35 @@ You can try commands like:
   - bye
 ____________________________________________________________
 ____________________________________________________________
-OOPS!!! The description of a todo cannot be empty.
+Got it. I've added this task:
+  [T][ ] read book
+Now you have 1 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
-OOPS!!! I'm sorry, but I don't know what that means :-(
+Got it. I've added this task:
+  [D][ ] return book (by: Sunday)
+Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
-OOPS!!! The description of a deadline cannot be empty.
+Got it. I've added this task:
+  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+Now you have 3 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
-OOPS!!! The description of an event cannot be empty.
+Here are the tasks in your list:
+1.[T][ ] read book
+2.[D][ ] return book (by: Sunday)
+3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
-Invalid task number.
+Noted. I've removed this task:
+  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1.[T][ ] read book
+2.[D][ ] return book (by: Sunday)
 ____________________________________________________________
 ____________________________________________________________
 Bye. Hope to see you again soon!

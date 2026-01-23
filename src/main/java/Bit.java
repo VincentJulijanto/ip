@@ -90,6 +90,50 @@ public class Bit {
                 continue;
             }
 
+            // DELETE
+            if (command.startsWith("delete ")) {
+                int idx = parseIndex(command.substring(7));
+
+                if (idx < 1 || idx > count) {
+                    System.out.println(LINE);
+                    System.out.println("Invalid task number.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                int removeIndex = idx - 1;
+
+                String removedType = type[removeIndex];
+                String removedDesc = desc[removeIndex];
+                String removedExtra = extra[removeIndex];
+                boolean removedDone = isDone[removeIndex];
+
+                // shift everything left
+                for (int i = removeIndex; i < count - 1; i++) {
+                    type[i] = type[i + 1];
+                    desc[i] = desc[i + 1];
+                    extra[i] = extra[i + 1];
+                    isDone[i] = isDone[i + 1];
+                }
+
+                // clear last slot (optional)
+                type[count - 1] = null;
+                desc[count - 1] = null;
+                extra[count - 1] = null;
+                isDone[count - 1] = false;
+
+                count--;
+
+                String status = removedDone ? "X" : " ";
+
+                System.out.println(LINE);
+                System.out.println("Noted. I've removed this task:");
+                System.out.println("  [" + removedType + "][" + status + "] " + removedDesc + removedExtra);
+                System.out.println("Now you have " + count + " tasks in the list.");
+                System.out.println(LINE);
+                continue;
+            }
+
             // TODO
             if (command.equals("todo") || command.startsWith("todo ")) {
                 String d = input.substring(4).trim();
