@@ -11,11 +11,12 @@ public class Bit {
         System.out.println(LINE);
 
         while (true) {
-            String input = sc.nextLine();
+            String input = sc.nextLine().trim();
+            String command = input.toLowerCase();
 
             System.out.println(LINE);
 
-            if (input.equals("bye")) {
+            if (command.equals("bye")) {
                 System.out.println("Bye. Hope to see you again soon!");
                 System.out.println(LINE);
                 break;
