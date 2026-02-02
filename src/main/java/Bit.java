@@ -1,10 +1,28 @@
 import java.util.Scanner;
 
+/**
+ * Bit is a simple command-line task manager.
+ * It supports adding tasks (todo, deadline, event),
+ * listing tasks, marking/unmarking tasks as done,
+ * deleting tasks, and exiting the program.
+ *
+ * Tasks are stored using parallel arrays for simplicity.
+ */
 public class Bit {
-    public static final String LINE = "____________________________________________________________";
+
+    /** Divider line used for consistent UI output */
+    public static final String LINE =
+            "____________________________________________________________";
+
+    /**
+     * Entry point of the Bit application.
+     * Continuously reads user commands and executes them
+     * until the user enters "bye".
+     */
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
+        // Initial greeting and command guide
         System.out.println(LINE);
         System.out.println("Hello! I'm Bit");
         System.out.println("What can I do for you?");
@@ -17,20 +35,28 @@ public class Bit {
         System.out.println("  - bye");
         System.out.println(LINE);
 
-        String[] desc = new String[100];
-        String[] type = new String[100];
-        String[] extra = new String[100];
-        boolean[] isDone = new boolean[100];
-        int count = 0;
+        /*
+         * Parallel arrays to store task data.
+         * Each index represents a single task.
+         */
+        String[] desc = new String[100];     // task description
+        String[] type = new String[100];     // T, D, or E
+        String[] extra = new String[100];    // deadline/event details
+        boolean[] isDone = new boolean[100]; // completion status
+        int count = 0;                       // number of tasks stored
 
+        // Main command-processing loop
         while (true) {
             String input = sc.nextLine().trim();
+
+            // Ignore empty input
             if (input.isEmpty()) {
                 continue;
             }
 
             String command = input.toLowerCase();
 
+            // Exit command
             if (command.equals("bye")) {
                 System.out.println(LINE);
                 System.out.println("Bye. Hope to see you again soon!");
@@ -38,6 +64,7 @@ public class Bit {
                 break;
             }
 
+            // List all tasks
             if (command.equals("list")) {
                 System.out.println(LINE);
 
@@ -56,41 +83,53 @@ public class Bit {
                 continue;
             }
 
+            // Mark a task as done
             if (command.startsWith("mark ")) {
                 int idx = parseIndex(command.substring(5));
+
+                // Validate task index
                 if (idx < 1 || idx > count) {
                     System.out.println(LINE);
                     System.out.println("Invalid task number.");
                     System.out.println(LINE);
                     continue;
                 }
+
                 isDone[idx - 1] = true;
 
                 System.out.println(LINE);
                 System.out.println("Nice! I've marked this task as done:");
-                System.out.println("  [" + type[idx - 1] + "][X] " + desc[idx - 1] + extra[idx - 1]);
+                System.out.println("  [" + type[idx - 1] + "][X] "
+                        + desc[idx - 1] + extra[idx - 1]);
                 System.out.println(LINE);
                 continue;
             }
 
+            // Unmark a task
             if (command.startsWith("unmark ")) {
                 int idx = parseIndex(command.substring(7));
+
                 if (idx < 1 || idx > count) {
                     System.out.println(LINE);
                     System.out.println("Invalid task number.");
                     System.out.println(LINE);
                     continue;
                 }
+
                 isDone[idx - 1] = false;
 
                 System.out.println(LINE);
                 System.out.println("OK, I've marked this task as not done yet:");
-                System.out.println("  [" + type[idx - 1] + "][ ] " + desc[idx - 1] + extra[idx - 1]);
+                System.out.println("  [" + type[idx - 1] + "][ ] "
+                        + desc[idx - 1] + extra[idx - 1]);
                 System.out.println(LINE);
                 continue;
             }
 
-            // DELETE
+            /*
+             * Delete a task by shifting all subsequent tasks
+             * one position to the left.
+             */
             if (command.startsWith("delete ")) {
                 int idx = parseIndex(command.substring(7));
 
@@ -103,12 +142,13 @@ public class Bit {
 
                 int removeIndex = idx - 1;
 
+                // Store removed task for feedback message
                 String removedType = type[removeIndex];
                 String removedDesc = desc[removeIndex];
                 String removedExtra = extra[removeIndex];
                 boolean removedDone = isDone[removeIndex];
 
-                // shift everything left
+                // Shift tasks left to fill the gap
                 for (int i = removeIndex; i < count - 1; i++) {
                     type[i] = type[i + 1];
                     desc[i] = desc[i + 1];
@@ -116,7 +156,7 @@ public class Bit {
                     isDone[i] = isDone[i + 1];
                 }
 
-                // clear last slot (optional)
+                // Clear last slot
                 type[count - 1] = null;
                 desc[count - 1] = null;
                 extra[count - 1] = null;
@@ -128,137 +168,14 @@ public class Bit {
 
                 System.out.println(LINE);
                 System.out.println("Noted. I've removed this task:");
-                System.out.println("  [" + removedType + "][" + status + "] " + removedDesc + removedExtra);
+                System.out.println("  [" + removedType + "][" + status + "] "
+                        + removedDesc + removedExtra);
                 System.out.println("Now you have " + count + " tasks in the list.");
                 System.out.println(LINE);
                 continue;
             }
 
-            // TODO
-            if (command.equals("todo") || command.startsWith("todo ")) {
-                String d = input.substring(4).trim();
-                if (d.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("OOPS!!! The description of a todo cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                type[count] = "T";
-                desc[count] = d;
-                extra[count] = "";
-                isDone[count] = false;
-                count++;
-
-                System.out.println(LINE);
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  [T][ ] " + d);
-                System.out.println("Now you have " + count + " tasks in the list.");
-                System.out.println(LINE);
-                continue;
-            }
-
-            // DEADLINE
-            if (command.equals("deadline") || command.startsWith("deadline ")) {
-                String rest = input.substring(8).trim();
-                if (rest.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("OOPS!!! The description of a deadline cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                int byPos = rest.toLowerCase().indexOf(" /by ");
-                if (byPos == -1) {
-                    System.out.println(LINE);
-                    System.out.println("OOPS!!! Use: deadline <description> /by <time>");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                String d = rest.substring(0, byPos).trim();
-                String by = rest.substring(byPos + 5).trim(); // after " /by "
-
-                if (d.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("OOPS!!! The description of a deadline cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                if (by.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("OOPS!!! The /by part of a deadline cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                type[count] = "D";
-                desc[count] = d;
-                extra[count] = " (by: " + by + ")";
-                isDone[count] = false;
-                count++;
-
-                System.out.println(LINE);
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  [D][ ] " + d + " (by: " + by + ")");
-                System.out.println("Now you have " + count + " tasks in the list.");
-                System.out.println(LINE);
-                continue;
-            }
-
-            // EVENT
-            if (command.equals("event") || command.startsWith("event ")) {
-                String rest = input.substring(5).trim();
-                if (rest.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("OOPS!!! The description of an event cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                String lowerRest = rest.toLowerCase();
-                int fromPos = lowerRest.indexOf(" /from ");
-                int toPos = lowerRest.indexOf(" /to ");
-
-                if (fromPos == -1 || toPos == -1 || toPos < fromPos) {
-                    System.out.println(LINE);
-                    System.out.println("OOPS!!! Use: event <description> /from <start> /to <end>");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                String d = rest.substring(0, fromPos).trim();
-                String from = rest.substring(fromPos + 7, toPos).trim();
-                String to = rest.substring(toPos + 5).trim();
-
-                if (d.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("OOPS!!! The description of an event cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                if (from.isEmpty() || to.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("OOPS!!! The /from and /to parts of an event cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                type[count] = "E";
-                desc[count] = d;
-                extra[count] = " (from: " + from + " to: " + to + ")";
-                isDone[count] = false;
-                count++;
-
-                System.out.println(LINE);
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  [E][ ] " + d + " (from: " + from + " to: " + to + ")");
-                System.out.println("Now you have " + count + " tasks in the list.");
-                System.out.println(LINE);
-                continue;
-            }
-
-            // UNKNOWN COMMAND
+            // Unknown command fallback
             System.out.println(LINE);
             System.out.println("OOPS!!! I'm sorry, but I don't know what that means :-(");
             System.out.println(LINE);
@@ -267,6 +184,12 @@ public class Bit {
         sc.close();
     }
 
+    /**
+     * Parses a task index from user input.
+     *
+     * @param s String containing the index
+     * @return Parsed integer index, or -1 if invalid
+     */
     private static int parseIndex(String s) {
         try {
             return Integer.parseInt(s.trim());
@@ -275,3 +198,4 @@ public class Bit {
         }
     }
 }
+
