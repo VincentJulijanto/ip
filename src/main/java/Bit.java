@@ -39,7 +39,9 @@ public class Bit {
         System.out.println("What can I do for you?");
         System.out.println();
         System.out.println("You can try commands like:");
-        System.out.println("  - <any task description>  (adds a task)");
+        System.out.println("  - todo <description>");
+        System.out.println("  - deadline <description> /by <time>");
+        System.out.println("  - event <description> /from <start> /to <end>");
         System.out.println("  - list");
         System.out.println("  - mark <number>");
         System.out.println("  - unmark <number>");
@@ -191,28 +193,143 @@ public class Bit {
                 continue;
             }
 
-            // Default: treat input as a todo task
-            if (count >= MAX_TASKS) {
+            // Add todo
+            if (command.startsWith("todo ")) {
+                String taskDesc = input.substring(5).trim();
+
+                if (taskDesc.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println("The description of a todo cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                if (count >= MAX_TASKS) {
+                    System.out.println(LINE);
+                    System.out.println("Task list is full.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                type[count] = "T";
+                desc[count] = taskDesc;
+                extra[count] = "";
+                isDone[count] = false;
+                count++;
+
+                saveTasks(filePath, desc, type, extra, isDone, count);
+
                 System.out.println(LINE);
-                System.out.println("Task list is full.");
+                System.out.println("Got it. I've added this task:");
+                System.out.println("  [T][ ] " + taskDesc);
+                System.out.println("Now you have " + count + " tasks in the list.");
                 System.out.println(LINE);
                 continue;
             }
 
-            type[count] = "T";
-            desc[count] = input; // keep original casing
-            extra[count] = "";
-            isDone[count] = false;
-            count++;
+            // Add deadline
+            if (command.startsWith("deadline ")) {
+                int byIndex = input.toLowerCase().indexOf(" /by ");
+                if (byIndex == -1) {
+                    System.out.println(LINE);
+                    System.out.println("Please use: deadline <description> /by <time>");
+                    System.out.println(LINE);
+                    continue;
+                }
 
-            saveTasks(filePath, desc, type, extra, isDone, count);
+                String taskDesc = input.substring(9, byIndex).trim(); // after "deadline "
+                String by = input.substring(byIndex + 5).trim();      // after " /by "
 
-            System.out.println(LINE);
-            System.out.println("Got it. I've added this task:");
-            System.out.println("  [T][ ] " + input);
-            System.out.println("Now you have " + count + " tasks in the list.");
-            System.out.println(LINE);
-            continue;
+                if (taskDesc.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println("The description of a deadline cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                if (by.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println("The /by time cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                if (count >= MAX_TASKS) {
+                    System.out.println(LINE);
+                    System.out.println("Task list is full.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                type[count] = "D";
+                desc[count] = taskDesc;
+                extra[count] = " (by: " + by + ")";
+                isDone[count] = false;
+                count++;
+
+                saveTasks(filePath, desc, type, extra, isDone, count);
+
+                System.out.println(LINE);
+                System.out.println("Got it. I've added this task:");
+                System.out.println("  [D][ ] " + taskDesc + " (by: " + by + ")");
+                System.out.println("Now you have " + count + " tasks in the list.");
+                System.out.println(LINE);
+                continue;
+            }
+
+            // Add event
+            if (command.startsWith("event ")) {
+                String lower = input.toLowerCase();
+                int fromIndex = lower.indexOf(" /from ");
+                int toIndex = lower.indexOf(" /to ");
+
+                if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
+                    System.out.println(LINE);
+                    System.out.println("Please use: event <description> /from <start> /to <end>");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                String taskDesc = input.substring(6, fromIndex).trim(); // after "event "
+                String from = input.substring(fromIndex + 7, toIndex).trim(); // after " /from "
+                String to = input.substring(toIndex + 5).trim(); // after " /to "
+
+                if (taskDesc.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println("The description of an event cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                if (from.isEmpty() || to.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println("The /from and /to times cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                if (count >= MAX_TASKS) {
+                    System.out.println(LINE);
+                    System.out.println("Task list is full.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                type[count] = "E";
+                desc[count] = taskDesc;
+                extra[count] = " (from: " + from + " to: " + to + ")";
+                isDone[count] = false;
+                count++;
+
+                saveTasks(filePath, desc, type, extra, isDone, count);
+
+                System.out.println(LINE);
+                System.out.println("Got it. I've added this task:");
+                System.out.println("  [E][ ] " + taskDesc + " (from: " + from + " to: " + to + ")");
+                System.out.println("Now you have " + count + " tasks in the list.");
+                System.out.println(LINE);
+                continue;
+            }
 
             // Unknown command fallback
             System.out.println(LINE);
