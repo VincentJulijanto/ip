@@ -1,3 +1,5 @@
-D | 0 | return book |  (by: Sunday)
+D | 0 | return book | (by: Sunday)
 T | 0 | make a list | 
-D | 0 | return book |  (by: 2026-02-25 2359)
+D | 0 | return book | (by: 2026-02-25 2359)
+D | 0 | return book | 2019-10-15
+E | 0 | meeting | 2019-10-15 1400 | 2019-10-15 1600
