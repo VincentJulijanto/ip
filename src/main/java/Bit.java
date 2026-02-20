@@ -1,3 +1,9 @@
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -14,6 +20,9 @@ public class Bit {
     public static final String LINE =
             "____________________________________________________________";
 
+    public static final String DATA_FILE_PATH = "./data/bit.txt";
+    public static final int MAX_TASKS = 100;
+
     /**
      * Entry point of the Bit application.
      * Continuously reads user commands and executes them
@@ -21,6 +30,8 @@ public class Bit {
      */
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+
+        Path filePath = Paths.get(DATA_FILE_PATH);
 
         // Initial greeting and command guide
         System.out.println(LINE);
@@ -39,11 +50,13 @@ public class Bit {
          * Parallel arrays to store task data.
          * Each index represents a single task.
          */
-        String[] desc = new String[100];     // task description
-        String[] type = new String[100];     // T, D, or E
-        String[] extra = new String[100];    // deadline/event details
-        boolean[] isDone = new boolean[100]; // completion status
+        String[] desc = new String[MAX_TASKS];     // task description
+        String[] type = new String[MAX_TASKS];     // T, D, or E
+        String[] extra = new String[MAX_TASKS];    // deadline/event details
+        boolean[] isDone = new boolean[MAX_TASKS]; // completion status
         int count = 0;                       // number of tasks stored
+
+        count = loadTasks(filePath, desc, type, extra, isDone);
 
         // Main command-processing loop
         while (true) {
@@ -96,6 +109,7 @@ public class Bit {
                 }
 
                 isDone[idx - 1] = true;
+                saveTasks(filePath, desc, type, extra, isDone, count);
 
                 System.out.println(LINE);
                 System.out.println("Nice! I've marked this task as done:");
@@ -117,6 +131,7 @@ public class Bit {
                 }
 
                 isDone[idx - 1] = false;
+                saveTasks(filePath, desc, type, extra, isDone, count);
 
                 System.out.println(LINE);
                 System.out.println("OK, I've marked this task as not done yet:");
@@ -163,6 +178,7 @@ public class Bit {
                 isDone[count - 1] = false;
 
                 count--;
+                saveTasks(filePath, desc, type, extra, isDone, count);
 
                 String status = removedDone ? "X" : " ";
 
@@ -174,6 +190,29 @@ public class Bit {
                 System.out.println(LINE);
                 continue;
             }
+
+            // Default: treat input as a todo task
+            if (count >= MAX_TASKS) {
+                System.out.println(LINE);
+                System.out.println("Task list is full.");
+                System.out.println(LINE);
+                continue;
+            }
+
+            type[count] = "T";
+            desc[count] = input; // keep original casing
+            extra[count] = "";
+            isDone[count] = false;
+            count++;
+
+            saveTasks(filePath, desc, type, extra, isDone, count);
+
+            System.out.println(LINE);
+            System.out.println("Got it. I've added this task:");
+            System.out.println("  [T][ ] " + input);
+            System.out.println("Now you have " + count + " tasks in the list.");
+            System.out.println(LINE);
+            continue;
 
             // Unknown command fallback
             System.out.println(LINE);
@@ -195,6 +234,111 @@ public class Bit {
             return Integer.parseInt(s.trim());
         } catch (NumberFormatException e) {
             return -1;
+        }
+    }
+
+    /**
+     * Ensures that the data file and its parent directory exist.
+     *
+     * @param filePath Path to the data file
+     * @throws IOException if file creation fails
+     */
+    private static void ensureDataFileExists(Path filePath) throws IOException {
+        Path parent = filePath.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        if (!Files.exists(filePath)) {
+            Files.createFile(filePath);
+        }
+    }
+
+    /**
+     * Loads tasks from disk into the parallel arrays.
+     *
+     * @param filePath Path to the data file
+     * @param desc Array storing task descriptions
+     * @param type Array storing task types (T/D/E)
+     * @param extra Array storing additional task info
+     * @param isDone Array storing task completion status
+     * @return number of tasks loaded
+     */
+    private static int loadTasks(Path filePath, String[] desc, String[] type,
+                                 String[] extra, boolean[] isDone) {
+        try {
+            ensureDataFileExists(filePath);
+
+            List<String> lines = Files.readAllLines(filePath);
+            int count = 0;
+
+            for (String line : lines) {
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                String[] parts = line.split("\\s*\\|\\s*", -1);
+                if (parts.length != 4) {
+                    continue;
+                }
+
+                String t = parts[0].trim();
+                String d = parts[1].trim();
+                String description = parts[2];
+                String ex = parts[3];
+
+                if (!(t.equals("T") || t.equals("D") || t.equals("E"))) {
+                    continue;
+                }
+                if (!(d.equals("0") || d.equals("1"))) {
+                    continue;
+                }
+                if (count >= MAX_TASKS) {
+                    break;
+                }
+
+                type[count] = t;
+                isDone[count] = d.equals("1");
+                desc[count] = description;
+                extra[count] = ex;
+                count++;
+            }
+
+            return count;
+
+        } catch (IOException e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Saves all current tasks to disk.
+     *
+     * @param filePath Path to the data file
+     * @param desc Array storing task descriptions
+     * @param type Array storing task types
+     * @param extra Array storing additional task info
+     * @param isDone Array storing task completion status
+     * @param count Number of active tasks
+     */
+    private static void saveTasks(Path filePath, String[] desc, String[] type,
+                                  String[] extra, boolean[] isDone, int count) {
+        try {
+            ensureDataFileExists(filePath);
+
+            try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+                for (int i = 0; i < count; i++) {
+                    String done = isDone[i] ? "1" : "0";
+                    String line = type[i] + " | " + done + " | "
+                            + desc[i] + " | " + extra[i];
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println(LINE);
+            System.out.println("Oops, I couldn't save your tasks to disk.");
+            System.out.println(LINE);
         }
     }
 }
