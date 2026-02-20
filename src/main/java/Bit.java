@@ -3,6 +3,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -22,6 +26,11 @@ public class Bit {
 
     public static final String DATA_FILE_PATH = "./data/bit.txt";
     public static final int MAX_TASKS = 100;
+    public static final DateTimeFormatter INPUT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final DateTimeFormatter OUTPUT_DATE = DateTimeFormatter.ofPattern("MMM dd yyyy");
+
+    public static final DateTimeFormatter INPUT_DATETIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+    public static final DateTimeFormatter OUTPUT_DATETIME = DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
 
     /**
      * Entry point of the Bit application.
@@ -56,9 +65,12 @@ public class Bit {
         String[] type = new String[MAX_TASKS];     // T, D, or E
         String[] extra = new String[MAX_TASKS];    // deadline/event details
         boolean[] isDone = new boolean[MAX_TASKS]; // completion status
+        LocalDate[] byDates = new LocalDate[MAX_TASKS];              // for deadlines
+        LocalDateTime[] fromTimes = new LocalDateTime[MAX_TASKS];    // for events
+        LocalDateTime[] toTimes = new LocalDateTime[MAX_TASKS];      // for events
         int count = 0;                       // number of tasks stored
 
-        count = loadTasks(filePath, desc, type, extra, isDone);
+        count = loadTasks(filePath, desc, type, extra, isDone, byDates, fromTimes, toTimes);
 
         // Main command-processing loop
         while (true) {
@@ -89,8 +101,17 @@ public class Bit {
                     System.out.println("Here are the tasks in your list:");
                     for (int i = 0; i < count; i++) {
                         String status = isDone[i] ? "X" : " ";
+                        String details = "";
+
+                        if ("D".equals(type[i]) && byDates[i] != null) {
+                            details = " (by: " + byDates[i].format(OUTPUT_DATE) + ")";
+                        } else if ("E".equals(type[i]) && fromTimes[i] != null && toTimes[i] != null) {
+                            details = " (from: " + fromTimes[i].format(OUTPUT_DATETIME)
+                                    + " to: " + toTimes[i].format(OUTPUT_DATETIME) + ")";
+                        }
+
                         System.out.println((i + 1) + ".[" + type[i] + "][" + status + "] "
-                                + desc[i] + extra[i]);
+                                + desc[i] + details);
                     }
                 }
 
@@ -111,7 +132,7 @@ public class Bit {
                 }
 
                 isDone[idx - 1] = true;
-                saveTasks(filePath, desc, type, extra, isDone, count);
+                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
 
                 System.out.println(LINE);
                 System.out.println("Nice! I've marked this task as done:");
@@ -133,7 +154,7 @@ public class Bit {
                 }
 
                 isDone[idx - 1] = false;
-                saveTasks(filePath, desc, type, extra, isDone, count);
+                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
 
                 System.out.println(LINE);
                 System.out.println("OK, I've marked this task as not done yet:");
@@ -180,7 +201,7 @@ public class Bit {
                 isDone[count - 1] = false;
 
                 count--;
-                saveTasks(filePath, desc, type, extra, isDone, count);
+                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
 
                 String status = removedDone ? "X" : " ";
 
@@ -217,7 +238,7 @@ public class Bit {
                 isDone[count] = false;
                 count++;
 
-                saveTasks(filePath, desc, type, extra, isDone, count);
+                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
 
                 System.out.println(LINE);
                 System.out.println("Got it. I've added this task:");
@@ -263,15 +284,24 @@ public class Bit {
 
                 type[count] = "D";
                 desc[count] = taskDesc;
-                extra[count] = " (by: " + by + ")";
+                try {
+                    LocalDate date = LocalDate.parse(by, INPUT_DATE);
+                    byDates[count] = date;
+                    extra[count] = by;
+                } catch (DateTimeParseException e) {
+                    System.out.println(LINE);
+                    System.out.println("Please use date format YYYY-MM-DD (e.g. 2019-10-15).");
+                    System.out.println(LINE);
+                    continue;
+                }
                 isDone[count] = false;
                 count++;
 
-                saveTasks(filePath, desc, type, extra, isDone, count);
+                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
 
                 System.out.println(LINE);
                 System.out.println("Got it. I've added this task:");
-                System.out.println("  [D][ ] " + taskDesc + " (by: " + by + ")");
+                System.out.println("  [D][ ] " + taskDesc + " (by: " + byDates[count-1].format(OUTPUT_DATE) + ")");
                 System.out.println("Now you have " + count + " tasks in the list.");
                 System.out.println(LINE);
                 continue;
@@ -317,15 +347,30 @@ public class Bit {
 
                 type[count] = "E";
                 desc[count] = taskDesc;
-                extra[count] = " (from: " + from + " to: " + to + ")";
+                try {
+                    LocalDateTime start = LocalDateTime.parse(from, INPUT_DATETIME);
+                    LocalDateTime end = LocalDateTime.parse(to, INPUT_DATETIME);
+
+                    fromTimes[count] = start;
+                    toTimes[count] = end;
+
+                    extra[count] = from + " | " + to;
+                } catch (DateTimeParseException e) {
+                    System.out.println(LINE);
+                    System.out.println("Please use: YYYY-MM-DD HHmm (e.g. 2019-10-15 1400)");
+                    System.out.println(LINE);
+                    continue;
+                }
                 isDone[count] = false;
                 count++;
 
-                saveTasks(filePath, desc, type, extra, isDone, count);
+                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
 
                 System.out.println(LINE);
                 System.out.println("Got it. I've added this task:");
-                System.out.println("  [E][ ] " + taskDesc + " (from: " + from + " to: " + to + ")");
+                System.out.println("  [E][ ] " + taskDesc
+                        + " (from: " + fromTimes[count-1].format(OUTPUT_DATETIME)
+                        + " to: " + toTimes[count-1].format(OUTPUT_DATETIME) + ")");
                 System.out.println("Now you have " + count + " tasks in the list.");
                 System.out.println(LINE);
                 continue;
@@ -381,7 +426,8 @@ public class Bit {
      * @return number of tasks loaded
      */
     private static int loadTasks(Path filePath, String[] desc, String[] type,
-                                 String[] extra, boolean[] isDone) {
+                                 String[] extra, boolean[] isDone,
+                                 LocalDate[] byDates, LocalDateTime[] fromTimes, LocalDateTime[] toTimes) {
         try {
             ensureDataFileExists(filePath);
 
@@ -417,6 +463,23 @@ public class Bit {
                 isDone[count] = d.equals("1");
                 desc[count] = description;
                 extra[count] = ex;
+                type[count] = t;
+                isDone[count] = d.equals("1");
+                desc[count] = description;
+                extra[count] = ex;
+
+                if (t.equals("D")) {
+                    try {
+                        byDates[count] = LocalDate.parse(ex, INPUT_DATE);
+                    } catch (Exception ignored) {}
+                } else if (t.equals("E")) {
+                    String[] dt = ex.split("\\s*\\|\\s*");
+                    if (dt.length == 2) {
+                        try { fromTimes[count] = LocalDateTime.parse(dt[0], INPUT_DATETIME); } catch (Exception ignored) {}
+                        try { toTimes[count] = LocalDateTime.parse(dt[1], INPUT_DATETIME); } catch (Exception ignored) {}
+                    }
+                }
+
                 count++;
             }
 
@@ -438,7 +501,8 @@ public class Bit {
      * @param count Number of active tasks
      */
     private static void saveTasks(Path filePath, String[] desc, String[] type,
-                                  String[] extra, boolean[] isDone, int count) {
+                                  String[] extra, boolean[] isDone, int count,
+                                  LocalDate[] byDates, LocalDateTime[] fromTimes, LocalDateTime[] toTimes) {
         try {
             ensureDataFileExists(filePath);
 
