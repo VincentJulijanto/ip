@@ -1,14 +1,14 @@
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Scanner;
+import task.Task;
+import task.Todo;
+import task.Deadline;
+import task.Event;
 
 /**
  * Bit is a simple command-line task manager.
@@ -20,17 +20,10 @@ import java.util.Scanner;
  */
 public class Bit {
 
-    /** Divider line used for consistent UI output */
-    public static final String LINE =
-            "____________________________________________________________";
-
     public static final String DATA_FILE_PATH = "./data/bit.txt";
     public static final int MAX_TASKS = 100;
     public static final DateTimeFormatter INPUT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    public static final DateTimeFormatter OUTPUT_DATE = DateTimeFormatter.ofPattern("MMM dd yyyy");
-
     public static final DateTimeFormatter INPUT_DATETIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
-    public static final DateTimeFormatter OUTPUT_DATETIME = DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
 
     /**
      * Entry point of the Bit application.
@@ -38,43 +31,25 @@ public class Bit {
      * until the user enters "bye".
      */
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+        Ui ui = new Ui();
 
         Path filePath = Paths.get(DATA_FILE_PATH);
+        Storage storage = new Storage(filePath);
 
         // Initial greeting and command guide
-        System.out.println(LINE);
-        System.out.println("Hello! I'm Bit");
-        System.out.println("What can I do for you?");
-        System.out.println();
-        System.out.println("You can try commands like:");
-        System.out.println("  - todo <description>");
-        System.out.println("  - deadline <description> /by <time>");
-        System.out.println("  - event <description> /from <start> /to <end>");
-        System.out.println("  - list");
-        System.out.println("  - mark <number>");
-        System.out.println("  - unmark <number>");
-        System.out.println("  - bye");
-        System.out.println(LINE);
+        ui.showWelcome();
 
         /*
-         * Parallel arrays to store task data.
-         * Each index represents a single task.
+         * Array of Task objects to store task data.
          */
-        String[] desc = new String[MAX_TASKS];     // task description
-        String[] type = new String[MAX_TASKS];     // T, D, or E
-        String[] extra = new String[MAX_TASKS];    // deadline/event details
-        boolean[] isDone = new boolean[MAX_TASKS]; // completion status
-        LocalDate[] byDates = new LocalDate[MAX_TASKS];              // for deadlines
-        LocalDateTime[] fromTimes = new LocalDateTime[MAX_TASKS];    // for events
-        LocalDateTime[] toTimes = new LocalDateTime[MAX_TASKS];      // for events
+        Task[] tasks = new Task[MAX_TASKS];
         int count = 0;                       // number of tasks stored
 
-        count = loadTasks(filePath, desc, type, extra, isDone, byDates, fromTimes, toTimes);
+        count = storage.loadTasks(tasks);
 
         // Main command-processing loop
         while (true) {
-            String input = sc.nextLine().trim();
+            String input = ui.readCommand();
 
             // Ignore empty input
             if (input.isEmpty()) {
@@ -85,304 +60,66 @@ public class Bit {
 
             // Exit command
             if (command.equals("bye")) {
-                System.out.println(LINE);
-                System.out.println("Bye. Hope to see you again soon!");
-                System.out.println(LINE);
+                ui.showBye();
                 break;
             }
 
             // List all tasks
             if (command.equals("list")) {
-                System.out.println(LINE);
+                handleList(ui, tasks, count);
+                continue;
+            }
 
-                if (count == 0) {
-                    System.out.println("Hey, your task list is empty.");
-                } else {
-                    System.out.println("Here are the tasks in your list:");
-                    for (int i = 0; i < count; i++) {
-                        String status = isDone[i] ? "X" : " ";
-                        String details = "";
-
-                        if ("D".equals(type[i]) && byDates[i] != null) {
-                            details = " (by: " + byDates[i].format(OUTPUT_DATE) + ")";
-                        } else if ("E".equals(type[i]) && fromTimes[i] != null && toTimes[i] != null) {
-                            details = " (from: " + fromTimes[i].format(OUTPUT_DATETIME)
-                                    + " to: " + toTimes[i].format(OUTPUT_DATETIME) + ")";
-                        }
-
-                        System.out.println((i + 1) + ".[" + type[i] + "][" + status + "] "
-                                + desc[i] + details);
-                    }
-                }
-
-                System.out.println(LINE);
+            if (command.equals("mark") || command.equals("unmark") || command.equals("delete")) {
+                ui.showLine();
+                ui.showMessage("Please provide a task number.");
+                ui.showLine();
                 continue;
             }
 
             // Mark a task as done
             if (command.startsWith("mark ")) {
-                int idx = parseIndex(command.substring(5));
-
-                // Validate task index
-                if (idx < 1 || idx > count) {
-                    System.out.println(LINE);
-                    System.out.println("Invalid task number.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                isDone[idx - 1] = true;
-                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
-
-                System.out.println(LINE);
-                System.out.println("Nice! I've marked this task as done:");
-                System.out.println("  [" + type[idx - 1] + "][X] "
-                        + desc[idx - 1] + extra[idx - 1]);
-                System.out.println(LINE);
+                handleMark(ui, storage, command, tasks, count);
                 continue;
             }
 
             // Unmark a task
             if (command.startsWith("unmark ")) {
-                int idx = parseIndex(command.substring(7));
-
-                if (idx < 1 || idx > count) {
-                    System.out.println(LINE);
-                    System.out.println("Invalid task number.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                isDone[idx - 1] = false;
-                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
-
-                System.out.println(LINE);
-                System.out.println("OK, I've marked this task as not done yet:");
-                System.out.println("  [" + type[idx - 1] + "][ ] "
-                        + desc[idx - 1] + extra[idx - 1]);
-                System.out.println(LINE);
+                handleUnmark(ui, storage, command, tasks, count);
                 continue;
             }
 
-            /*
-             * Delete a task by shifting all subsequent tasks
-             * one position to the left.
-             */
+            // Delete
             if (command.startsWith("delete ")) {
-                int idx = parseIndex(command.substring(7));
-
-                if (idx < 1 || idx > count) {
-                    System.out.println(LINE);
-                    System.out.println("Invalid task number.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                int removeIndex = idx - 1;
-
-                // Store removed task for feedback message
-                String removedType = type[removeIndex];
-                String removedDesc = desc[removeIndex];
-                String removedExtra = extra[removeIndex];
-                boolean removedDone = isDone[removeIndex];
-
-                // Shift tasks left to fill the gap
-                for (int i = removeIndex; i < count - 1; i++) {
-                    type[i] = type[i + 1];
-                    desc[i] = desc[i + 1];
-                    extra[i] = extra[i + 1];
-                    isDone[i] = isDone[i + 1];
-                }
-
-                // Clear last slot
-                type[count - 1] = null;
-                desc[count - 1] = null;
-                extra[count - 1] = null;
-                isDone[count - 1] = false;
-
-                count--;
-                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
-
-                String status = removedDone ? "X" : " ";
-
-                System.out.println(LINE);
-                System.out.println("Noted. I've removed this task:");
-                System.out.println("  [" + removedType + "][" + status + "] "
-                        + removedDesc + removedExtra);
-                System.out.println("Now you have " + count + " tasks in the list.");
-                System.out.println(LINE);
+                count = handleDelete(ui, storage, command, tasks, count);
                 continue;
             }
 
             // Add todo
             if (command.startsWith("todo ")) {
-                String taskDesc = input.substring(5).trim();
-
-                if (taskDesc.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("The description of a todo cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                if (count >= MAX_TASKS) {
-                    System.out.println(LINE);
-                    System.out.println("Task list is full.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                type[count] = "T";
-                desc[count] = taskDesc;
-                extra[count] = "";
-                isDone[count] = false;
-                count++;
-
-                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
-
-                System.out.println(LINE);
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  [T][ ] " + taskDesc);
-                System.out.println("Now you have " + count + " tasks in the list.");
-                System.out.println(LINE);
+                count = handleTodo(ui, storage, input, tasks, count);
                 continue;
             }
 
             // Add deadline
             if (command.startsWith("deadline ")) {
-                int byIndex = input.toLowerCase().indexOf(" /by ");
-                if (byIndex == -1) {
-                    System.out.println(LINE);
-                    System.out.println("Please use: deadline <description> /by <time>");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                String taskDesc = input.substring(9, byIndex).trim(); // after "deadline "
-                String by = input.substring(byIndex + 5).trim();      // after " /by "
-
-                if (taskDesc.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("The description of a deadline cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                if (by.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("The /by time cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                if (count >= MAX_TASKS) {
-                    System.out.println(LINE);
-                    System.out.println("Task list is full.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                type[count] = "D";
-                desc[count] = taskDesc;
-                try {
-                    LocalDate date = LocalDate.parse(by, INPUT_DATE);
-                    byDates[count] = date;
-                    extra[count] = by;
-                } catch (DateTimeParseException e) {
-                    System.out.println(LINE);
-                    System.out.println("Please use date format YYYY-MM-DD (e.g. 2019-10-15).");
-                    System.out.println(LINE);
-                    continue;
-                }
-                isDone[count] = false;
-                count++;
-
-                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
-
-                System.out.println(LINE);
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  [D][ ] " + taskDesc + " (by: " + byDates[count-1].format(OUTPUT_DATE) + ")");
-                System.out.println("Now you have " + count + " tasks in the list.");
-                System.out.println(LINE);
+                count = handleDeadline(ui, storage, input, tasks, count);
                 continue;
             }
 
             // Add event
             if (command.startsWith("event ")) {
-                String lower = input.toLowerCase();
-                int fromIndex = lower.indexOf(" /from ");
-                int toIndex = lower.indexOf(" /to ");
-
-                if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
-                    System.out.println(LINE);
-                    System.out.println("Please use: event <description> /from <start> /to <end>");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                String taskDesc = input.substring(6, fromIndex).trim(); // after "event "
-                String from = input.substring(fromIndex + 7, toIndex).trim(); // after " /from "
-                String to = input.substring(toIndex + 5).trim(); // after " /to "
-
-                if (taskDesc.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("The description of an event cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                if (from.isEmpty() || to.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println("The /from and /to times cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                if (count >= MAX_TASKS) {
-                    System.out.println(LINE);
-                    System.out.println("Task list is full.");
-                    System.out.println(LINE);
-                    continue;
-                }
-
-                type[count] = "E";
-                desc[count] = taskDesc;
-                try {
-                    LocalDateTime start = LocalDateTime.parse(from, INPUT_DATETIME);
-                    LocalDateTime end = LocalDateTime.parse(to, INPUT_DATETIME);
-
-                    fromTimes[count] = start;
-                    toTimes[count] = end;
-
-                    extra[count] = from + " | " + to;
-                } catch (DateTimeParseException e) {
-                    System.out.println(LINE);
-                    System.out.println("Please use: YYYY-MM-DD HHmm (e.g. 2019-10-15 1400)");
-                    System.out.println(LINE);
-                    continue;
-                }
-                isDone[count] = false;
-                count++;
-
-                saveTasks(filePath, desc, type, extra, isDone, count, byDates, fromTimes, toTimes);
-
-                System.out.println(LINE);
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  [E][ ] " + taskDesc
-                        + " (from: " + fromTimes[count-1].format(OUTPUT_DATETIME)
-                        + " to: " + toTimes[count-1].format(OUTPUT_DATETIME) + ")");
-                System.out.println("Now you have " + count + " tasks in the list.");
-                System.out.println(LINE);
+                count = handleEvent(ui, storage, input, tasks, count);
                 continue;
             }
 
             // Unknown command fallback
-            System.out.println(LINE);
-            System.out.println("OOPS!!! I'm sorry, but I don't know what that means :-(");
-            System.out.println(LINE);
+            ui.showLine();
+            ui.showMessage("OOPS!!! I'm sorry, but I don't know what that means :-(");
+            ui.showLine();
         }
 
-        sc.close();
+        ui.close();
     }
 
     /**
@@ -400,127 +137,350 @@ public class Bit {
     }
 
     /**
-     * Ensures that the data file and its parent directory exist.
+     * Parses either a date-time (yyyy-MM-dd HHmm) or a date (yyyy-MM-dd).
+     * If only a date is provided, it is treated as start of day (00:00).
      *
-     * @param filePath Path to the data file
-     * @throws IOException if file creation fails
+     * @return LocalDateTime parsed value, or null if invalid (and error message is shown)
      */
-    private static void ensureDataFileExists(Path filePath) throws IOException {
-        Path parent = filePath.getParent();
-        if (parent != null) {
-            Files.createDirectories(parent);
-        }
-        if (!Files.exists(filePath)) {
-            Files.createFile(filePath);
+    private static LocalDateTime parseDateOrDateTime(Ui ui, String raw) {
+        try {
+            return LocalDateTime.parse(raw, INPUT_DATETIME);
+        } catch (DateTimeParseException ignoredDt) {
+            try {
+                LocalDate d = LocalDate.parse(raw, INPUT_DATE);
+                return d.atStartOfDay();
+            } catch (DateTimeParseException ignoredDate) {
+                ui.showLine();
+                ui.showMessage("Please use: YYYY-MM-DD or YYYY-MM-DD HHmm (e.g. 2019-10-15 or 2019-10-15 1400)");
+                ui.showLine();
+                return null;
+            }
         }
     }
 
     /**
-     * Loads tasks from disk into the parallel arrays.
+     * Saves the current tasks to storage.
+     * If saving fails, shows an error message through the UI.
      *
-     * @param filePath Path to the data file
-     * @param desc Array storing task descriptions
-     * @param type Array storing task types (T/D/E)
-     * @param extra Array storing additional task info
-     * @param isDone Array storing task completion status
-     * @return number of tasks loaded
+     * @return true if saving succeeds, false otherwise
      */
-    private static int loadTasks(Path filePath, String[] desc, String[] type,
-                                 String[] extra, boolean[] isDone,
-                                 LocalDate[] byDates, LocalDateTime[] fromTimes, LocalDateTime[] toTimes) {
+    private static boolean saveOrShowError(Ui ui, Storage storage, Task[] tasks, int count) {
         try {
-            ensureDataFileExists(filePath);
+            storage.saveTasks(tasks, count);
+            return true;
+        } catch (IOException e) {
+            ui.showLine();
+            ui.showMessage("Oops, I couldn't save your tasks to disk.");
+            ui.showLine();
+            return false;
+        }
+    }
 
-            List<String> lines = Files.readAllLines(filePath);
-            int count = 0;
+    /**
+     * Displays all tasks currently stored in the task list.
+     */
+    private static void handleList(Ui ui, Task[] tasks, int count) {
+        ui.showLine();
 
-            for (String line : lines) {
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
+        if (count == 0) {
+            ui.showMessage("Hey, your task list is empty.");
+            ui.showLine();
+            return;
+        }
 
-                String[] parts = line.split("\\s*\\|\\s*", -1);
-                if (parts.length != 4) {
-                    continue;
-                }
+        ui.showMessage("Here are the tasks in your list:");
+        for (int i = 0; i < count; i++) {
+            ui.showMessage((i + 1) + "." + tasks[i]);
+        }
 
-                String t = parts[0].trim();
-                String d = parts[1].trim();
-                String description = parts[2];
-                String ex = parts[3];
+        ui.showLine();
+    }
 
-                if (!(t.equals("T") || t.equals("D") || t.equals("E"))) {
-                    continue;
-                }
-                if (!(d.equals("0") || d.equals("1"))) {
-                    continue;
-                }
-                if (count >= MAX_TASKS) {
-                    break;
-                }
+    /**
+     * Marks a task as completed based on the user command.
+     */
+    private static void handleMark(Ui ui, Storage storage, String command, Task[] tasks, int count) {
+        int idx = parseIndex(command.substring(5)); // after "mark "
 
-                type[count] = t;
-                isDone[count] = d.equals("1");
-                desc[count] = description;
-                extra[count] = ex;
-                type[count] = t;
-                isDone[count] = d.equals("1");
-                desc[count] = description;
-                extra[count] = ex;
+        if (idx < 1 || idx > count) {
+            ui.showLine();
+            ui.showMessage("Invalid task number.");
+            ui.showLine();
+            return;
+        }
 
-                if (t.equals("D")) {
-                    try {
-                        byDates[count] = LocalDate.parse(ex, INPUT_DATE);
-                    } catch (Exception ignored) {}
-                } else if (t.equals("E")) {
-                    String[] dt = ex.split("\\s*\\|\\s*");
-                    if (dt.length == 2) {
-                        try { fromTimes[count] = LocalDateTime.parse(dt[0], INPUT_DATETIME); } catch (Exception ignored) {}
-                        try { toTimes[count] = LocalDateTime.parse(dt[1], INPUT_DATETIME); } catch (Exception ignored) {}
-                    }
-                }
+        Task task = tasks[idx - 1];
+        task.markDone();
 
-                count++;
-            }
+        if (!saveOrShowError(ui, storage, tasks, count)) {
+            return;
+        }
 
+        ui.showLine();
+        ui.showMessage("Nice! I've marked this task as done:");
+        ui.showMessage("  " + task);
+        ui.showLine();
+    }
+
+    /**
+     * Marks a task as not completed.
+     */
+    private static void handleUnmark(Ui ui, Storage storage, String command, Task[] tasks, int count) {
+        int idx = parseIndex(command.substring(7)); // after "unmark "
+
+        if (idx < 1 || idx > count) {
+            ui.showLine();
+            ui.showMessage("Invalid task number.");
+            ui.showLine();
+            return;
+        }
+
+        Task task = tasks[idx - 1];
+        task.markUndone();
+
+        if (!saveOrShowError(ui, storage, tasks, count)) {
+            return;
+        }
+
+        ui.showLine();
+        ui.showMessage("OK, I've marked this task as not done yet:");
+        ui.showMessage("  " + task);
+        ui.showLine();
+    }
+
+    /**
+     * Deletes a task from the task list and shifts remaining tasks.
+     *
+     * @return updated task count
+     */
+    private static int handleDelete(Ui ui, Storage storage, String command, Task[] tasks, int count) {
+        int idx = parseIndex(command.substring(7)); // after "delete "
+
+        if (idx < 1 || idx > count) {
+            ui.showLine();
+            ui.showMessage("Invalid task number.");
+            ui.showLine();
             return count;
-
-        } catch (IOException e) {
-            return 0;
         }
+
+        int removeIndex = idx - 1;
+        Task removed = tasks[removeIndex];
+
+        for (int i = removeIndex; i < count - 1; i++) {
+            tasks[i] = tasks[i + 1];
+        }
+
+        tasks[count - 1] = null;
+        count--;
+
+        if (!saveOrShowError(ui, storage, tasks, count)) {
+            return count;
+        }
+
+        ui.showLine();
+        ui.showMessage("Noted. I've removed this task:");
+        ui.showMessage("  " + removed);
+        ui.showMessage("Now you have " + count + " tasks in the list.");
+        ui.showLine();
+
+        return count;
     }
 
     /**
-     * Saves all current tasks to disk.
+     * Adds a new todo task to the task list.
      *
-     * @param filePath Path to the data file
-     * @param desc Array storing task descriptions
-     * @param type Array storing task types
-     * @param extra Array storing additional task info
-     * @param isDone Array storing task completion status
-     * @param count Number of active tasks
+     * @return updated task count
      */
-    private static void saveTasks(Path filePath, String[] desc, String[] type,
-                                  String[] extra, boolean[] isDone, int count,
-                                  LocalDate[] byDates, LocalDateTime[] fromTimes, LocalDateTime[] toTimes) {
-        try {
-            ensureDataFileExists(filePath);
+    private static int handleTodo(Ui ui, Storage storage, String input, Task[] tasks, int count) {
+        String taskDesc = input.substring(5).trim(); // after "todo "
 
-            try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
-                for (int i = 0; i < count; i++) {
-                    String done = isDone[i] ? "1" : "0";
-                    String line = type[i] + " | " + done + " | "
-                            + desc[i] + " | " + extra[i];
-                    writer.write(line);
-                    writer.newLine();
-                }
-            }
-
-        } catch (IOException e) {
-            System.out.println(LINE);
-            System.out.println("Oops, I couldn't save your tasks to disk.");
-            System.out.println(LINE);
+        if (taskDesc.isEmpty()) {
+            ui.showLine();
+            ui.showMessage("The description of a todo cannot be empty.");
+            ui.showLine();
+            return count;
         }
+
+        if (count >= MAX_TASKS) {
+            ui.showLine();
+            ui.showMessage("Task list is full.");
+            ui.showLine();
+            return count;
+        }
+
+        Task newTask = new Todo(taskDesc);
+        tasks[count] = newTask;
+        count++;
+
+        if (!saveOrShowError(ui, storage, tasks, count)) {
+            return count;
+        }
+
+        ui.showLine();
+        ui.showMessage("Got it. I've added this task:");
+        ui.showMessage("  " + newTask);
+        ui.showMessage("Now you have " + count + " tasks in the list.");
+        ui.showLine();
+
+        return count;
+    }
+
+    /**
+     * Adds a deadline task with a due date.
+     *
+     * @return updated task count
+     */
+    private static int handleDeadline(Ui ui, Storage storage, String input, Task[] tasks, int count) {
+        String lower = input.toLowerCase();
+
+        int byIndex = lower.indexOf(" /by ");
+        boolean hasSlash = true;
+
+        if (byIndex == -1) {
+            byIndex = lower.indexOf(" by ");
+            hasSlash = false;
+        }
+
+        if (byIndex == -1) {
+            ui.showLine();
+            ui.showMessage("Please use: deadline <description> /by <time>");
+            ui.showLine();
+            return count;
+        }
+
+        String taskDesc = input.substring(9, byIndex).trim(); // after "deadline "
+        String byRaw = input.substring(byIndex + (hasSlash ? 5 : 4)).trim(); // after " /by " or " by "
+
+        if (taskDesc.isEmpty()) {
+            ui.showLine();
+            ui.showMessage("The description of a deadline cannot be empty.");
+            ui.showLine();
+            return count;
+        }
+
+        if (byRaw.isEmpty()) {
+            ui.showLine();
+            ui.showMessage("The /by time cannot be empty.");
+            ui.showLine();
+            return count;
+        }
+
+        if (count >= MAX_TASKS) {
+            ui.showLine();
+            ui.showMessage("Task list is full.");
+            ui.showLine();
+            return count;
+        }
+
+        LocalDateTime dt = parseDateOrDateTime(ui, byRaw);
+        if (dt == null) {
+            return count;
+        }
+
+        // Preserve whether user gave date-only or date+time (so storage/toString can keep it nice)
+        Task newTask;
+        if (byRaw.contains(" ")) {
+            newTask = new Deadline(taskDesc, dt);
+        } else {
+            newTask = new Deadline(taskDesc, dt.toLocalDate());
+        }
+
+        tasks[count] = newTask;
+        count++;
+
+        if (!saveOrShowError(ui, storage, tasks, count)) {
+            return count;
+        }
+
+        ui.showLine();
+        ui.showMessage("Got it. I've added this task:");
+        ui.showMessage("  " + newTask);
+        ui.showMessage("Now you have " + count + " tasks in the list.");
+        ui.showLine();
+
+        return count;
+    }
+
+    /**
+     * Adds an event task with start and end times.
+     *
+     * @return updated task count
+     */
+    private static int handleEvent(Ui ui, Storage storage, String input, Task[] tasks, int count) {
+        String lower = input.toLowerCase();
+
+        // accept both "/from" and "from"
+        int fromIndex = lower.indexOf(" /from ");
+        boolean fromSlash = true;
+        if (fromIndex == -1) {
+            fromIndex = lower.indexOf(" from ");
+            fromSlash = false;
+        }
+
+        // accept both "/to" and "to"
+        int toIndex = lower.indexOf(" /to ");
+        boolean toSlash = true;
+        if (toIndex == -1) {
+            toIndex = lower.indexOf(" to ");
+            toSlash = false;
+        }
+
+        if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
+            ui.showLine();
+            ui.showMessage("Please use: event <description> /from <start> /to <end>");
+            ui.showLine();
+            return count;
+        }
+
+        String taskDesc = input.substring(6, fromIndex).trim(); // after "event "
+        String fromRaw = input.substring(fromIndex + (fromSlash ? 7 : 6), toIndex).trim(); // after " /from " or " from "
+        String toRaw = input.substring(toIndex + (toSlash ? 5 : 4)).trim(); // after " /to " or " to "
+
+        if (taskDesc.isEmpty()) {
+            ui.showLine();
+            ui.showMessage("The description of an event cannot be empty.");
+            ui.showLine();
+            return count;
+        }
+
+        if (fromRaw.isEmpty() || toRaw.isEmpty()) {
+            ui.showLine();
+            ui.showMessage("The /from and /to times cannot be empty.");
+            ui.showLine();
+            return count;
+        }
+
+        if (count >= MAX_TASKS) {
+            ui.showLine();
+            ui.showMessage("Task list is full.");
+            ui.showLine();
+            return count;
+        }
+
+        LocalDateTime start = parseDateOrDateTime(ui, fromRaw);
+        if (start == null) {
+            return count;
+        }
+
+        LocalDateTime end = parseDateOrDateTime(ui, toRaw);
+        if (end == null) {
+            return count;
+        }
+
+        Task newTask = new Event(taskDesc, start, end);
+        tasks[count] = newTask;
+        count++;
+
+        if (!saveOrShowError(ui, storage, tasks, count)) {
+            return count;
+        }
+
+        ui.showLine();
+        ui.showMessage("Got it. I've added this task:");
+        ui.showMessage("  " + newTask);
+        ui.showMessage("Now you have " + count + " tasks in the list.");
+        ui.showLine();
+
+        return count;
     }
 }
-

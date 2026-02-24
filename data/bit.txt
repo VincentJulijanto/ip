@@ -1,5 +1,8 @@
-D | 0 | return book | (by: Sunday)
-T | 0 | make a list | 
-D | 0 | return book | (by: 2026-02-25 2359)
 D | 0 | return book | 2019-10-15
-E | 0 | meeting | 2019-10-15 1400 | 2019-10-15 1600
+T | 0 | make noodle | 
+T | 0 | hello | 
+T | 0 | return 2 book | 
+D | 0 | read book | 2029-12-02
+D | 0 | eat lunch | 2023-10-19
+D | 0 | return book | 2023-12-19
+E | 0 | eat lunch | 2029-12-10 0000 | 2029-12-10 0000
