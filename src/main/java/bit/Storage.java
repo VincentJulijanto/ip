@@ -1,3 +1,5 @@
+package bit;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -5,10 +7,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import task.Task;
-import task.Todo;
-import task.Deadline;
-import task.Event;
+import bit.task.Task;
+import bit.task.Todo;
+import bit.task.Deadline;
+import bit.task.Event;
 
 /**
  * Handles loading tasks from disk and saving tasks back to disk.

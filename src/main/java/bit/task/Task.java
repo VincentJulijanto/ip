@@ -1,4 +1,4 @@
-package task;
+package bit.task;
 
 /**
  * Represents a basic task in the Bit task manager.

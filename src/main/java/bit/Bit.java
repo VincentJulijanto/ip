@@ -1,3 +1,5 @@
+package bit;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -5,10 +7,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import task.Task;
-import task.Todo;
-import task.Deadline;
-import task.Event;
+import bit.task.Task;
+import bit.task.Todo;
+import bit.task.Deadline;
+import bit.task.Event;
 
 /**
  * Bit is a simple command-line task manager.

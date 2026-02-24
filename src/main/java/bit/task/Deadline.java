@@ -1,4 +1,4 @@
-package task;
+package bit.task;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
