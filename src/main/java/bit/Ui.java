@@ -54,6 +54,7 @@ public class Ui {
         System.out.println("  mark <number>");
         System.out.println("  unmark <number>");
         System.out.println("  delete <number>");
+        System.out.println("  find <keyword>");
         System.out.println("  bye");
         System.out.println();
         pause(950);

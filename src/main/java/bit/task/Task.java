@@ -60,6 +60,18 @@ public class Task {
         return description;
     }
 
+    /**
+     * Checks whether the task description contains the given keyword.
+     * The comparison is case-insensitive.
+     *
+     * @param keyword keyword to search for
+     * @return {@code true} if the description contains the keyword,
+     *         {@code false} otherwise
+     */
+    public boolean containsKeyword(String keyword) {
+        return description.toLowerCase().contains(keyword.toLowerCase());
+    }
+
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;

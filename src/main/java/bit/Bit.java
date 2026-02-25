@@ -117,6 +117,12 @@ public class Bit {
                 continue;
             }
 
+            // Find tasks
+            if (command.startsWith("find ")) {
+                handleFind(ui, command, tasks, count);
+                continue;
+            }
+
             // Unknown command fallback
             ui.showLine();
             ui.showMessage("OOPS!!! I'm sorry, but I don't know what that means :-(");
@@ -529,5 +535,43 @@ public class Bit {
         ui.showLine();
 
         return count;
+    }
+
+    /**
+     * Finds and displays tasks whose description contains the given keyword.
+     * The search is case-insensitive.
+     *
+     * @param ui      User interface used to display messages
+     * @param command Full user command containing the search keyword (e.g. "find book")
+     * @param tasks   Array containing all stored tasks
+     * @param count   Number of tasks currently in the list
+     */
+    private static void handleFind(Ui ui, String command, Task[] tasks, int count) {
+        String keyword = command.substring(5).trim(); // after "find "
+
+        if (keyword.isEmpty()) {
+            ui.showLine();
+            ui.showMessage("Please provide a keyword to search.");
+            ui.showLine();
+            return;
+        }
+
+        ui.showLine();
+        ui.showMessage("Here are the matching tasks in your list:");
+
+        int matchCount = 0;
+
+        for (int i = 0; i < count; i++) {
+            if (tasks[i].containsKeyword(keyword)) {
+                matchCount++;
+                ui.showMessage(matchCount + "." + tasks[i]);
+            }
+        }
+
+        if (matchCount == 0) {
+            ui.showMessage("No matching tasks found.");
+        }
+
+        ui.showLine();
     }
 }
