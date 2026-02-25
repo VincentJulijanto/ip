@@ -27,6 +27,11 @@ import bit.task.Event;
 public class Storage {
     private final Path filePath;
 
+    /**
+     * Creates a Storage instance that reads from and writes to the given file path.
+     *
+     * @param filePath Path to the task data file
+     */
     public Storage(Path filePath) {
         this.filePath = filePath;
     }
@@ -209,7 +214,10 @@ public class Storage {
     }
 
     /**
-     * Converts Task object to file type code (T/D/E).
+     * Converts a task object into its file type code.
+     *
+     * @param t Task instance
+     * @return File type code ("T", "D", or "E")
      */
     private String getTypeCode(Task t) {
         if (t instanceof Todo) {
@@ -225,7 +233,10 @@ public class Storage {
     }
 
     /**
-     * Converts Task object into the "extra" column for file storage.
+     * Converts a task object into its "extra" column representation for file storage.
+     *
+     * @param t Task instance
+     * @return Extra column string for storage (empty for Todo)
      */
     private String getExtraForFile(Task t) {
         if (t instanceof Deadline) {

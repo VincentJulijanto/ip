@@ -14,16 +14,33 @@ public class Event extends Task {
     private static final DateTimeFormatter OUTPUT_DATETIME =
             DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
 
+    /**
+     * Creates an event task with a start and end time.
+     *
+     * @param description Description of the event
+     * @param from Start date and time of the event
+     * @param to End date and time of the event
+     */
     public Event(String description, LocalDateTime from, LocalDateTime to) {
         super(description);
         this.from = from;
         this.to = to;
     }
 
+    /**
+     * Returns the start date and time of the event.
+     *
+     * @return Start datetime
+     */
     public LocalDateTime getFrom() {
         return from;
     }
 
+    /**
+     * Returns the end date and time of the event.
+     *
+     * @return End datetime
+     */
     public LocalDateTime getTo() {
         return to;
     }

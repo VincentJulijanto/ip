@@ -20,7 +20,10 @@ public class Deadline extends Task {
     private final LocalDateTime byDateTime;
 
     /**
-     * Creates a deadline with a date only.
+     * Creates a deadline task with a date only.
+     *
+     * @param description Description of the task
+     * @param by Deadline date
      */
     public Deadline(String description, LocalDate by) {
         super(description);
@@ -29,7 +32,10 @@ public class Deadline extends Task {
     }
 
     /**
-     * Creates a deadline with a date + time.
+     * Creates a deadline task with a specific date and time.
+     *
+     * @param description Description of the task
+     * @param by Deadline date and time
      */
     public Deadline(String description, LocalDateTime by) {
         super(description);
@@ -38,8 +44,10 @@ public class Deadline extends Task {
     }
 
     /**
-     * Returns the deadline date if this Deadline was created with date-only.
-     * If this Deadline was created with date+time, returns the date portion.
+     * Returns the deadline date.
+     * If the deadline includes a time, only the date portion is returned.
+     *
+     * @return Deadline date
      */
     public LocalDate getBy() {
         if (byDate != null) {
@@ -49,8 +57,9 @@ public class Deadline extends Task {
     }
 
     /**
-     * Returns the deadline datetime if this Deadline was created with date+time.
-     * Returns null if this Deadline is date-only.
+     * Returns the deadline date and time if this task includes a time.
+     *
+     * @return Deadline date and time, or {@code null} if this deadline is date-only
      */
     public LocalDateTime getByDateTime() {
         return byDateTime;

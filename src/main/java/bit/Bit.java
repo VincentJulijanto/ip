@@ -31,6 +31,8 @@ public class Bit {
      * Entry point of the Bit application.
      * Continuously reads user commands and executes them
      * until the user enters "bye".
+     *
+     * @param args Command line arguments (not used).
      */
     public static void main(String[] args) {
         Ui ui = new Ui();
@@ -141,8 +143,11 @@ public class Bit {
     /**
      * Parses either a date-time (yyyy-MM-dd HHmm) or a date (yyyy-MM-dd).
      * If only a date is provided, it is treated as start of day (00:00).
+     * Shows an error message through the UI if the input is invalid.
      *
-     * @return LocalDateTime parsed value, or null if invalid (and error message is shown)
+     * @param ui  User interface used to display error messages
+     * @param raw Raw date/time input from the user
+     * @return Parsed LocalDateTime, or {@code null} if the input is invalid
      */
     private static LocalDateTime parseDateOrDateTime(Ui ui, String raw) {
         try {
@@ -164,7 +169,11 @@ public class Bit {
      * Saves the current tasks to storage.
      * If saving fails, shows an error message through the UI.
      *
-     * @return true if saving succeeds, false otherwise
+     * @param ui      User interface used to display messages
+     * @param storage Storage used to persist tasks
+     * @param tasks   Array containing all stored tasks
+     * @param count   Number of tasks currently in the list
+     * @return {@code true} if saving succeeds, {@code false} otherwise
      */
     private static boolean saveOrShowError(Ui ui, Storage storage, Task[] tasks, int count) {
         try {
@@ -180,6 +189,10 @@ public class Bit {
 
     /**
      * Displays all tasks currently stored in the task list.
+     *
+     * @param ui    User interface used to display messages
+     * @param tasks Array containing all stored tasks
+     * @param count Number of tasks currently in the list
      */
     private static void handleList(Ui ui, Task[] tasks, int count) {
         ui.showLine();
@@ -199,7 +212,13 @@ public class Bit {
     }
 
     /**
-     * Marks a task as completed based on the user command.
+     * Marks the specified task as done.
+     *
+     * @param ui      User interface used to display messages
+     * @param storage Storage used to persist updated tasks
+     * @param command Full user command containing the task index (e.g. "mark 2")
+     * @param tasks   Array containing all stored tasks
+     * @param count   Number of tasks currently in the list
      */
     private static void handleMark(Ui ui, Storage storage, String command, Task[] tasks, int count) {
         int idx = parseIndex(command.substring(5)); // after "mark "
@@ -225,7 +244,13 @@ public class Bit {
     }
 
     /**
-     * Marks a task as not completed.
+     * Marks the specified task as not done.
+     *
+     * @param ui      User interface used to display messages
+     * @param storage Storage used to persist updated tasks
+     * @param command Full user command containing the task index (e.g. "unmark 2")
+     * @param tasks   Array containing all stored tasks
+     * @param count   Number of tasks currently in the list
      */
     private static void handleUnmark(Ui ui, Storage storage, String command, Task[] tasks, int count) {
         int idx = parseIndex(command.substring(7)); // after "unmark "
@@ -251,9 +276,14 @@ public class Bit {
     }
 
     /**
-     * Deletes a task from the task list and shifts remaining tasks.
+     * Deletes the specified task from the task list and shifts remaining tasks.
      *
-     * @return updated task count
+     * @param ui      User interface used to display messages
+     * @param storage Storage used to persist updated tasks
+     * @param command Full user command containing the task index (e.g. "delete 3")
+     * @param tasks   Array containing all stored tasks
+     * @param count   Number of tasks currently in the list
+     * @return Updated number of tasks after deletion
      */
     private static int handleDelete(Ui ui, Storage storage, String command, Task[] tasks, int count) {
         int idx = parseIndex(command.substring(7)); // after "delete "
@@ -291,7 +321,12 @@ public class Bit {
     /**
      * Adds a new todo task to the task list.
      *
-     * @return updated task count
+     * @param ui      User interface used to display messages
+     * @param storage Storage used to persist updated tasks
+     * @param input   Full user input containing the todo description
+     * @param tasks   Array containing all stored tasks
+     * @param count   Number of tasks currently in the list
+     * @return Updated number of tasks after adding the todo
      */
     private static int handleTodo(Ui ui, Storage storage, String input, Task[] tasks, int count) {
         String taskDesc = input.substring(5).trim(); // after "todo "
@@ -330,7 +365,12 @@ public class Bit {
     /**
      * Adds a deadline task with a due date.
      *
-     * @return updated task count
+     * @param ui      User interface used to display messages
+     * @param storage Storage used to persist updated tasks
+     * @param input   Full user input containing description and /by time
+     * @param tasks   Array containing all stored tasks
+     * @param count   Number of tasks currently in the list
+     * @return Updated number of tasks after adding the deadline
      */
     private static int handleDeadline(Ui ui, Storage storage, String input, Task[] tasks, int count) {
         String lower = input.toLowerCase();
@@ -406,7 +446,12 @@ public class Bit {
     /**
      * Adds an event task with start and end times.
      *
-     * @return updated task count
+     * @param ui      User interface used to display messages
+     * @param storage Storage used to persist updated tasks
+     * @param input   Full user input containing description, /from and /to times
+     * @param tasks   Array containing all stored tasks
+     * @param count   Number of tasks currently in the list
+     * @return Updated number of tasks after adding the event
      */
     private static int handleEvent(Ui ui, Storage storage, String input, Task[] tasks, int count) {
         String lower = input.toLowerCase();
