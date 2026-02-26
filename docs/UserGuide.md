@@ -216,3 +216,5 @@ bye
 ```
 
 The program will terminate.
+
+This guide explains how to use Bit to manage tasks efficiently.
