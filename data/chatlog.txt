@@ -28,3 +28,13 @@
 2026-02-26T04:42:50.173530Z|ME|bye
 2026-02-26T04:42:50.609707Z|BIT|Bye. Hope to see you again soon!
 2026-02-26T04:42:50.610544Z|SESSION_END|BYE
+2026-02-26T13:54:17.765673Z|ME|list
+2026-02-26T13:54:18.211336Z|BIT|Here are the tasks in your list:\n1.[T][ ] make noodle\n2.[T][ ] hello\n3.[T][ ] return 2 book\n4.[D][ ] read book (by: Dec 02 2029)\n5.[D][ ] eat lunch (by: Oct 19 2023)\n6.[D][ ] return book (by: Dec 19 2023)\n7.[D][ ] eat bread (by: Dec 30 2029)\n8.[T][ ] help me\n9.[T][ ] help
+2026-02-26T14:08:58.047945Z|ME|todo read bookupdate 1 read book chapter 2list
+2026-02-26T14:08:58.480666Z|BIT|Got it. I've added this task:\n  [T][ ] read bookupdate 1 read book chapter 2list\nNow you have 10 tasks in the list.
+2026-02-26T14:09:17.089153Z|ME|update 1 read book chapter 2
+2026-02-26T14:09:17.517013Z|BIT|Nice! I've updated this task:\n  [T][ ] read book chapter 2
+2026-02-26T14:09:20.190843Z|ME|list
+2026-02-26T14:09:20.631060Z|BIT|Here are the tasks in your list:\n1.[T][ ] read book chapter 2\n2.[T][ ] hello\n3.[T][ ] return 2 book\n4.[D][ ] read book (by: Dec 02 2029)\n5.[D][ ] eat lunch (by: Oct 19 2023)\n6.[D][ ] return book (by: Dec 19 2023)\n7.[D][ ] eat bread (by: Dec 30 2029)\n8.[T][ ] help me\n9.[T][ ] help\n10.[T][ ] read bookupdate 1 read book chapter 2list
+2026-02-26T14:09:27.347298Z|ME|delete 10
+2026-02-26T14:09:27.771138Z|BIT|Noted. I've removed this task:\n  [T][ ] read bookupdate 1 read book chapter 2list\nNow you have 9 tasks in the list.
