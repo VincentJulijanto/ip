@@ -9,6 +9,7 @@
 ```
 
 Bit is a lightweight command-line task manager that helps users organise their tasks quickly and efficiently.
+Bit is designed for users who prefer quick command-based task management.
 
 It supports managing todos, deadlines, and events through simple commands, making it ideal for users who prefer fast keyboard-based interaction.
 
