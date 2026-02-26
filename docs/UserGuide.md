@@ -1,6 +1,7 @@
 # Bit User Guide
 
 Bit is a lightweight task manager that helps users manage their tasks efficiently using simple command-line inputs.
+Bit allows users to manage tasks quickly using simple command-based inputs.
 
 It supports managing **todos**, **deadlines**, and **events**, and allows users to update, search, and organise tasks quickly.
 
