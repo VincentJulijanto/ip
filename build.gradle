@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
 }
 
 repositories {
@@ -28,14 +29,25 @@ test {
 }
 
 application {
-    mainClass.set("bit.Bit")
+    // GUI entry point (you confirmed Main extends javafx.application.Application)
+    mainClass.set("bit.Main")
+}
+
+javafx {
+    version = "17"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
 shadowJar {
     archiveBaseName = "bit"
     archiveClassifier = null
+
+    // Ensure the jar runs the GUI entry point
+    manifest {
+        attributes "Main-Class": "bit.Main"
+    }
 }
 
-run{
+run {
     standardInput = System.in
 }
