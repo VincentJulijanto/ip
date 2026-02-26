@@ -43,23 +43,11 @@ public class Storage {
 
     private final Path filePath;
 
-    /**
-     * Creates a Storage instance that reads from and writes to the given file path.
-     *
-     * <p><b>Assumption:</b> {@code filePath} is not {@code null}.
-     *
-     * @param filePath Path to the task data file (non-null).
-     */
     public Storage(Path filePath) {
         assert filePath != null : "Storage filePath must not be null";
         this.filePath = filePath;
     }
 
-    /**
-     * Ensures the data file exists by creating its parent directories and the file if needed.
-     *
-     * @throws IOException If directory or file creation fails.
-     */
     private void ensureDataFileExists() throws IOException {
         assert filePath != null : "Storage filePath must not be null";
 
@@ -72,19 +60,42 @@ public class Storage {
         }
     }
 
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     /**
-     * Unwraps legacy deadline formats like {@code "(by: 2019-10-15)"} or {@code "by: 2019-10-15"}.
+     * Splits a line into 4 columns and trims each column.
      *
-     * <p><b>Assumption:</b> {@code extra} may be {@code null}.
-     *
-     * @param extra The raw extra column from file.
-     * @return Unwrapped extra content, or empty string if {@code extra} is {@code null}.
+     * @param line input line (non-null, non-blank)
+     * @return trimmed parts array of length 4, or null if invalid
+     */
+    private String[] splitLine(String line) {
+        String[] raw = line.split("\\s*\\|\\s*", -1);
+        if (raw.length != EXPECTED_PARTS) {
+            return null;
+        }
+        for (int i = 0; i < raw.length; i++) {
+            raw[i] = raw[i].trim();
+        }
+        return raw;
+    }
+
+    private boolean isValidType(String type) {
+        return TYPE_TODO.equals(type) || TYPE_DEADLINE.equals(type) || TYPE_EVENT.equals(type);
+    }
+
+    private boolean isValidDoneFlag(String done) {
+        return DONE.equals(done) || NOT_DONE.equals(done);
+    }
+
+    /**
+     * Unwraps legacy deadline formats like "(by: 2019-10-15)" or "by: 2019-10-15".
      */
     private String unwrapBy(String extra) {
         if (extra == null) {
             return "";
         }
-
         String s = extra.trim();
 
         if (s.startsWith("(by:") && s.endsWith(")")) {
@@ -101,20 +112,6 @@ public class Storage {
         return s;
     }
 
-    /**
-     * Loads tasks from disk into the given {@code tasks} array.
-     *
-     * <p><b>Assumptions:</b>
-     * <ul>
-     *   <li>{@code tasks} is not {@code null}.</li>
-     *   <li>{@code tasks.length} represents the maximum capacity to load.</li>
-     * </ul>
-     *
-     * <p>If the file does not exist or cannot be read, this method returns {@code 0}.
-     *
-     * @param tasks The array to populate.
-     * @return Number of tasks loaded (0 if file missing/unreadable).
-     */
     public int loadTasks(Task[] tasks) {
         assert tasks != null : "tasks array must not be null";
 
@@ -167,54 +164,9 @@ public class Storage {
         }
     }
 
-    private boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
-    }
-
-    /**
-     * Splits a line into its 4 columns and trims each column.
-     *
-     * @param line input line (non-null, non-blank)
-     * @return trimmed parts array of length 4, or null if invalid
-     */
-    private String[] splitLine(String line) {
-        String[] raw = line.split("\\s*\\|\\s*", -1);
-        if (raw.length != EXPECTED_PARTS) {
-            return null;
-        }
-
-        for (int i = 0; i < raw.length; i++) {
-            raw[i] = raw[i].trim();
-        }
-        return raw;
-    }
-
-    private boolean isValidType(String type) {
-        return TYPE_TODO.equals(type) || TYPE_DEADLINE.equals(type) || TYPE_EVENT.equals(type);
-    }
-
-    private boolean isValidDoneFlag(String done) {
-        return DONE.equals(done) || NOT_DONE.equals(done);
-    }
-
-    /**
-     * Parses a single task from file data.
-     *
-     * <p><b>Assumptions:</b>
-     * <ul>
-     *   <li>{@code type} is one of {@code "T"}, {@code "D"}, or {@code "E"}.</li>
-     *   <li>{@code description} is non-null and non-blank.</li>
-     * </ul>
-     *
-     * @param type Task type code ("T", "D", "E").
-     * @param description Task description.
-     * @param extra Extra column data (may be empty).
-     * @return Task instance, or {@code null} if invalid/unparseable.
-     */
     private Task parseTask(String type, String description, String extra) {
         assert type != null : "type must not be null";
-        assert description != null && !description.isBlank()
-                : "description must be non-null and non-blank";
+        assert description != null && !description.isBlank() : "description must be non-null and non-blank";
 
         switch (type) {
         case TYPE_TODO:
@@ -231,7 +183,6 @@ public class Storage {
     private Task parseDeadline(String description, String extra) {
         String cleaned = unwrapBy(extra);
 
-        // Try datetime first (yyyy-MM-dd HHmm), then date (yyyy-MM-dd)
         try {
             LocalDateTime byDateTime = LocalDateTime.parse(cleaned, Bit.INPUT_DATETIME);
             return new Deadline(description, byDateTime);
@@ -246,8 +197,11 @@ public class Storage {
     }
 
     private Task parseEvent(String description, String extra) {
-        // Event extra: "yyyy-MM-dd HHmm | yyyy-MM-dd HHmm"
-        String[] dt = extra.split("\\s*\\|\\s*");
+        if (extra == null) {
+            return null;
+        }
+
+        String[] dt = extra.split("\\s*\\|\\s*", 2);
         if (dt.length != 2) {
             return null;
         }
@@ -261,19 +215,6 @@ public class Storage {
         }
     }
 
-    /**
-     * Saves the first {@code count} tasks from {@code tasks} to disk using the same file format.
-     *
-     * <p><b>Assumptions:</b>
-     * <ul>
-     *   <li>{@code tasks} is not {@code null}.</li>
-     *   <li>{@code count} is within {@code [0, tasks.length]}.</li>
-     * </ul>
-     *
-     * @param tasks The array of tasks.
-     * @param count Number of tasks to save.
-     * @throws IOException If writing fails.
-     */
     public void saveTasks(Task[] tasks, int count) throws IOException {
         assert tasks != null : "tasks array must not be null";
         assert count >= 0 && count <= tasks.length : "count must be within [0, tasks.length]";
@@ -286,21 +227,26 @@ public class Storage {
                 if (t == null) {
                     continue;
                 }
-
                 writer.write(toFileLine(t));
                 writer.newLine();
             }
         }
     }
 
-    /**
-     * Converts a task object into its file type code.
-     *
-     * <p><b>Assumption:</b> {@code t} is not {@code null}.
-     *
-     * @param t Task instance.
-     * @return File type code ("T", "D", or "E").
-     */
+    private String toFileLine(Task t) {
+        assert t != null : "Task must not be null";
+
+        String type = getTypeCode(t);
+        String done = t.isDone() ? DONE : NOT_DONE;
+        String description = t.getDescription();
+        if (description == null) {
+            description = "";
+        }
+        String extra = getExtraForFile(t);
+
+        return type + " | " + done + " | " + description + " | " + extra;
+    }
+
     private String getTypeCode(Task t) {
         assert t != null : "Task must not be null";
 
@@ -313,23 +259,14 @@ public class Storage {
         if (t instanceof Event) {
             return TYPE_EVENT;
         }
-        return TYPE_TODO; // safe default
+        return TYPE_TODO;
     }
 
-    /**
-     * Converts a task object into its "extra" column representation for file storage.
-     *
-     * <p><b>Assumption:</b> {@code t} is not {@code null}.
-     *
-     * @param t Task instance.
-     * @return Extra column string for storage (empty for Todo).
-     */
     private String getExtraForFile(Task t) {
         assert t != null : "Task must not be null";
 
         if (t instanceof Deadline) {
             Deadline d = (Deadline) t;
-
             if (d.getByDateTime() != null) {
                 return d.getByDateTime().format(Bit.INPUT_DATETIME);
             }
@@ -342,30 +279,5 @@ public class Storage {
         }
 
         return "";
-    }
-    /**
-     * Converts a task into a single line for file storage:
-     * TYPE | DONE | DESCRIPTION | EXTRA
-     *
-     * <p><b>Assumption:</b> {@code t} is not {@code null}.
-     *
-     * @param t Task instance.
-     * @return A formatted line suitable for writing to the data file.
-     */
-    private String toFileLine(Task t) {
-        assert t != null : "Task must not be null";
-
-        String type = getTypeCode(t);
-        String done = t.isDone() ? DONE : NOT_DONE;
-        String description = t.getDescription();
-
-        // description should never be null in a valid Task
-        if (description == null) {
-            description = "";
-        }
-
-        String extra = getExtraForFile(t);
-
-        return type + " | " + done + " | " + description + " | " + extra;
     }
 }
