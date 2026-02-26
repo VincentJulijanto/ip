@@ -9,10 +9,20 @@ public class Todo extends Task {
     /**
      * Creates a todo task with the given description.
      *
+     * <p><b>Assumptions:</b>
+     * <ul>
+     *   <li>{@code description} is not {@code null}</li>
+     *   <li>{@code description} is not blank</li>
+     * </ul>
+     *
      * @param description Description of the todo task
      */
     public Todo(String description) {
         super(description);
+
+        // Assumption inherited from Task constructor
+        assert description != null : "Todo description must not be null";
+        assert !description.isBlank() : "Todo description must not be blank";
     }
 
     @Override

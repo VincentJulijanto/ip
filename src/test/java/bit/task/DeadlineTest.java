@@ -1,9 +1,10 @@
 package bit.task;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.LocalDateTime;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DeadlineTest {
 
@@ -44,5 +45,4 @@ public class DeadlineTest {
 
         assertTrue(d.isDone());
     }
-
 }
