@@ -37,7 +37,7 @@ public class Task {
      * <p><b>Assumption:</b> Marking a task done is always valid regardless of current state.
      */
     public void markDone() {
-        isDone = true;
+        this.isDone = true;
     }
 
     /**
@@ -46,7 +46,7 @@ public class Task {
      * <p><b>Assumption:</b> Marking a task undone is always valid regardless of current state.
      */
     public void markUndone() {
-        isDone = false;
+        this.isDone = false;
     }
 
     /**
@@ -55,7 +55,7 @@ public class Task {
      * @return {@code true} if the task is completed, {@code false} otherwise.
      */
     public boolean isDone() {
-        return isDone;
+        return this.isDone;
     }
 
     /**
@@ -64,7 +64,7 @@ public class Task {
      * @return {@code "X"} if done, otherwise {@code " "}.
      */
     public String getStatusIcon() {
-        return isDone ? "X" : " ";
+        return this.isDone ? "X" : " ";
     }
 
     /**
@@ -73,7 +73,7 @@ public class Task {
      * @return The non-null description of this task.
      */
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     /**
@@ -102,6 +102,6 @@ public class Task {
 
     @Override
     public String toString() {
-        return "[" + getStatusIcon() + "] " + description;
+        return "[" + getStatusIcon() + "] " + this.description;
     }
 }

@@ -31,6 +31,16 @@ import bit.task.Todo;
  * </ul>
  */
 public class Storage {
+
+    private static final String TYPE_TODO = "T";
+    private static final String TYPE_DEADLINE = "D";
+    private static final String TYPE_EVENT = "E";
+
+    private static final String DONE = "1";
+    private static final String NOT_DONE = "0";
+
+    private static final int EXPECTED_PARTS = 4;
+
     private final Path filePath;
 
     /**
@@ -74,6 +84,7 @@ public class Storage {
         if (extra == null) {
             return "";
         }
+
         String s = extra.trim();
 
         if (s.startsWith("(by:") && s.endsWith(")")) {
@@ -114,32 +125,25 @@ public class Storage {
             int count = 0;
 
             for (String line : lines) {
-                if (line == null || line.trim().isEmpty()) {
-                    continue;
-                }
-
-                // Expected: TYPE | DONE | DESC | EXTRA
-                String[] parts = line.split("\\s*\\|\\s*", -1);
-                if (parts.length != 4) {
-                    continue;
-                }
-
-                String type = parts[0].trim();        // T / D / E
-                String done = parts[1].trim();        // 0 / 1
-                String description = parts[2].trim();
-                String extra = parts[3].trim();
-
-                if (!(type.equals("T") || type.equals("D") || type.equals("E"))) {
-                    continue;
-                }
-                if (!(done.equals("0") || done.equals("1"))) {
-                    continue;
-                }
-                if (description.isEmpty()) {
+                if (isBlank(line)) {
                     continue;
                 }
                 if (count >= tasks.length) {
                     break;
+                }
+
+                String[] parts = splitLine(line);
+                if (parts == null) {
+                    continue;
+                }
+
+                String type = parts[0];
+                String done = parts[1];
+                String description = parts[2];
+                String extra = parts[3];
+
+                if (!isValidType(type) || !isValidDoneFlag(done) || description.isEmpty()) {
+                    continue;
                 }
 
                 Task task = parseTask(type, description, extra);
@@ -147,14 +151,13 @@ public class Storage {
                     continue;
                 }
 
-                if (done.equals("1")) {
+                if (DONE.equals(done)) {
                     task.markDone();
                 } else {
                     task.markUndone();
                 }
 
-                tasks[count] = task;
-                count++;
+                tasks[count++] = task;
             }
 
             return count;
@@ -162,6 +165,36 @@ public class Storage {
         } catch (IOException e) {
             return 0;
         }
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    /**
+     * Splits a line into its 4 columns and trims each column.
+     *
+     * @param line input line (non-null, non-blank)
+     * @return trimmed parts array of length 4, or null if invalid
+     */
+    private String[] splitLine(String line) {
+        String[] raw = line.split("\\s*\\|\\s*", -1);
+        if (raw.length != EXPECTED_PARTS) {
+            return null;
+        }
+
+        for (int i = 0; i < raw.length; i++) {
+            raw[i] = raw[i].trim();
+        }
+        return raw;
+    }
+
+    private boolean isValidType(String type) {
+        return TYPE_TODO.equals(type) || TYPE_DEADLINE.equals(type) || TYPE_EVENT.equals(type);
+    }
+
+    private boolean isValidDoneFlag(String done) {
+        return DONE.equals(done) || NOT_DONE.equals(done);
     }
 
     /**
@@ -185,42 +218,46 @@ public class Storage {
 
         if (type.equals("T")) {
             return new Todo(description);
+        case TYPE_DEADLINE:
+            return parseDeadline(description, extra);
+        case TYPE_EVENT:
+            return parseEvent(description, extra);
+        default:
+            return null;
         }
+    }
 
-        if (type.equals("D")) {
-            String cleaned = unwrapBy(extra);
+    private Task parseDeadline(String description, String extra) {
+        String cleaned = unwrapBy(extra);
 
-            // Try datetime first (yyyy-MM-dd HHmm), then date (yyyy-MM-dd)
+        // Try datetime first (yyyy-MM-dd HHmm), then date (yyyy-MM-dd)
+        try {
+            LocalDateTime byDateTime = LocalDateTime.parse(cleaned, Bit.INPUT_DATETIME);
+            return new Deadline(description, byDateTime);
+        } catch (Exception ignoredDt) {
             try {
-                LocalDateTime byDateTime = LocalDateTime.parse(cleaned, Bit.INPUT_DATETIME);
-                return new Deadline(description, byDateTime);
-            } catch (Exception ignoredDt) {
-                try {
-                    LocalDate byDate = LocalDate.parse(cleaned, Bit.INPUT_DATE);
-                    return new Deadline(description, byDate);
-                } catch (Exception ignoredDate) {
-                    return null;
-                }
-            }
-        }
-
-        if (type.equals("E")) {
-            // Event extra: "yyyy-MM-dd HHmm | yyyy-MM-dd HHmm"
-            String[] dt = extra.split("\\s*\\|\\s*");
-            if (dt.length != 2) {
-                return null;
-            }
-
-            try {
-                LocalDateTime from = LocalDateTime.parse(dt[0].trim(), Bit.INPUT_DATETIME);
-                LocalDateTime to = LocalDateTime.parse(dt[1].trim(), Bit.INPUT_DATETIME);
-                return new Event(description, from, to);
-            } catch (Exception ignored) {
+                LocalDate byDate = LocalDate.parse(cleaned, Bit.INPUT_DATE);
+                return new Deadline(description, byDate);
+            } catch (Exception ignoredDate) {
                 return null;
             }
         }
+    }
 
-        return null;
+    private Task parseEvent(String description, String extra) {
+        // Event extra: "yyyy-MM-dd HHmm | yyyy-MM-dd HHmm"
+        String[] dt = extra.split("\\s*\\|\\s*");
+        if (dt.length != 2) {
+            return null;
+        }
+
+        try {
+            LocalDateTime from = LocalDateTime.parse(dt[0].trim(), Bit.INPUT_DATETIME);
+            LocalDateTime to = LocalDateTime.parse(dt[1].trim(), Bit.INPUT_DATETIME);
+            return new Event(description, from, to);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     /**
@@ -249,12 +286,7 @@ public class Storage {
                     continue;
                 }
 
-                String typeCode = getTypeCode(t);
-                String done = t.isDone() ? "1" : "0";
-                String desc = t.getDescription();
-                String extra = getExtraForFile(t);
-
-                writer.write(typeCode + " | " + done + " | " + desc + " | " + extra);
+                writer.write(toFileLine(t));
                 writer.newLine();
             }
         }
@@ -272,15 +304,15 @@ public class Storage {
         assert t != null : "Task must not be null";
 
         if (t instanceof Todo) {
-            return "T";
+            return TYPE_TODO;
         }
         if (t instanceof Deadline) {
-            return "D";
+            return TYPE_DEADLINE;
         }
         if (t instanceof Event) {
-            return "E";
+            return TYPE_EVENT;
         }
-        return "T"; // safe default
+        return TYPE_TODO; // safe default
     }
 
     /**
@@ -297,12 +329,9 @@ public class Storage {
         if (t instanceof Deadline) {
             Deadline d = (Deadline) t;
 
-            // If the deadline was created with date+time, preserve time in file.
             if (d.getByDateTime() != null) {
                 return d.getByDateTime().format(Bit.INPUT_DATETIME);
             }
-
-            // Otherwise save date-only.
             return d.getBy().format(Bit.INPUT_DATE);
         }
 
@@ -311,7 +340,6 @@ public class Storage {
             return e.getFrom().format(Bit.INPUT_DATETIME) + " | " + e.getTo().format(Bit.INPUT_DATETIME);
         }
 
-        // Todo has no extra
         return "";
     }
 }

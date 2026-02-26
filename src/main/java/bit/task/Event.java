@@ -18,6 +18,9 @@ public class Event extends Task {
     private static final DateTimeFormatter OUTPUT_DATETIME =
             DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
 
+    private final LocalDateTime from;
+    private final LocalDateTime to;
+
     /**
      * Creates an event task with a start and end time.
      *
