@@ -1,26 +1,98 @@
-# Bit project template
+# Bit – Personal Task Manager
 
-This is a project template for a greenfield Java project. It's named after the Java mascot _Duke_. Given below are instructions on how to use it.
+```
+ ____   ___  _____
+| __ ) |_ _||_   _|
+|  _ \  | |   | |
+| |_) | | |   | |
+|____/ |___|  |_|
+```
 
-## Setting up in Intellij
+Bit is a lightweight command-line task manager that helps users organise their tasks quickly and efficiently.
 
-Prerequisites: JDK 17, update Intellij to the most recent version.
+It supports managing todos, deadlines, and events through simple commands, making it ideal for users who prefer fast keyboard-based interaction.
 
-1. Open Intellij (if you are not in the welcome screen, click `File` > `Close Project` to close the existing project first)
-1. Open the project into Intellij as follows:
-   1. Click `Open`.
-   1. Select the project directory, and click `OK`.
-   1. If there are any further prompts, accept the defaults.
-1. Configure the project to use **JDK 17** (not other versions) as explained in [here](https://www.jetbrains.com/help/idea/sdk.html#set-up-jdk).<br>
-   In the same dialog, set the **Project language level** field to the `SDK default` option.
-1. After that, locate the `src/main/java/Bit.java` file, right-click it, and choose `Run Bit.main()` (if the code editor is showing compile errors, try restarting the IDE). If the setup is correct, you should see something like the below as the output:
-   ```
-   Hello from
-    ____   ___  _____
-   | __ | |_ _||_   _|
-   |  _\\  | |   | | 
-   | |_) | | |   | |  
-   |____/ |___|  |_| 
-   ```
+---
 
-**Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
+## Features
+
+- Add **Todo** tasks
+- Add **Deadline** tasks with date and time
+- Add **Event** tasks with start and end time
+- View all tasks using `list`
+- Mark or unmark tasks as completed
+- Delete tasks
+- Update existing tasks
+- Find tasks using keywords
+- Tasks are automatically saved and loaded between runs
+
+---
+
+## Setting up in IntelliJ
+
+Prerequisites: **JDK 17** and the latest version of **IntelliJ IDEA**.
+
+1. Open IntelliJ
+2. Click `File` → `Open`
+3. Select the project folder
+4. Configure the project to use **JDK 17**
+5. Locate the file:
+
+`src/main/java/bit/Launcher.java`
+
+6. Right-click the file and select:
+
+`Run Launcher.main()`
+
+If the setup is correct, the program will start in the terminal window.
+
+---
+
+## Example Commands
+
+```
+todo read book
+deadline submit report /by 2026-03-01 2359
+event meeting /from 2026-03-02 1400 /to 2026-03-02 1600
+list
+mark 2
+unmark 2
+delete 3
+update 1 new description
+find book
+bye
+```
+
+---
+
+## Data Storage
+
+Tasks are automatically saved to a local data file and will be loaded again when the program starts.
+
+---
+
+## Project Structure
+
+```
+src
+ └─ main
+     └─ java
+         └─ bit
+             ├─ task
+             │   ├─ Task
+             │   ├─ Todo
+             │   ├─ Deadline
+             │   └─ Event
+             ├─ Storage
+             ├─ Ui
+             ├─ Bit
+             ├─ Main
+             └─ Launcher
+```
+
+---
+
+## Notes
+
+- The `src/main/java` folder must remain the root directory for Java files.
+- The project is built using **Java 17**.
