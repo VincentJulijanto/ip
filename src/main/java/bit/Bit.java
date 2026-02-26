@@ -211,14 +211,18 @@ public class Bit {
     private static void handleList(Ui ui, Task[] tasks, int count) {
 
         if (count == 0) {
-            ui.showMessage("Hey, your task list is empty.");
+            ui.showMessage("Your task list is empty.");
             return;
         }
 
-        ui.showMessage("Here are the tasks in your list:");
+        StringBuilder sb = new StringBuilder();
+        sb.append("Here are the tasks in your list:\n");
+
         for (int i = 0; i < count; i++) {
-            ui.showMessage((i + 1) + "." + tasks[i]);
+            sb.append(String.format("%2d) %s%n", i + 1, tasks[i]));
         }
+
+        ui.showMessage(sb.toString().trim());
     }
 
     /**
@@ -245,8 +249,10 @@ public class Bit {
             return;
         }
 
-        ui.showMessage("Nice! I've marked this task as done:");
-        ui.showMessage("  " + task);
+        ui.showMessage(
+                "Nice! I've marked this task as done:\n"
+                        + "  " + task
+        );
     }
 
     /**
@@ -273,8 +279,10 @@ public class Bit {
             return;
         }
 
-        ui.showMessage("OK, I've marked this task as not done yet:");
-        ui.showMessage("  " + task);
+        ui.showMessage(
+                "OK, I've marked this task as not done yet:\n"
+                        + "  " + task
+        );
     }
 
     /**
@@ -309,9 +317,11 @@ public class Bit {
             return count;
         }
 
-        ui.showMessage("Noted. I've removed this task:");
-        ui.showMessage("  " + removed);
-        ui.showMessage("Now you have " + count + " tasks in the list.");
+        ui.showMessage(
+                "Noted. I've removed this task:\n"
+                        + "  " + removed + "\n"
+                        + "Now you have " + count + " tasks in the list."
+        );
 
         return count;
     }
@@ -367,8 +377,10 @@ public class Bit {
             return count;
         }
 
-        ui.showMessage("Nice! I've updated this task:");
-        ui.showMessage("  " + task);
+        ui.showMessage(
+                "Nice! I've updated this task:\n"
+                        + "  " + task
+        );
 
         return count;
     }
@@ -404,9 +416,11 @@ public class Bit {
             return count;
         }
 
-        ui.showMessage("Got it. I've added this task:");
-        ui.showMessage("  " + newTask);
-        ui.showMessage("Now you have " + count + " tasks in the list.");
+        ui.showMessage(
+                "Got it! I've added this task:\n"
+                        + "  " + newTask + "\n"
+                        + "Now you have " + count + " tasks in the list."
+        );
 
         return count;
     }
@@ -475,9 +489,11 @@ public class Bit {
             return count;
         }
 
-        ui.showMessage("Got it. I've added this task:");
-        ui.showMessage("  " + newTask);
-        ui.showMessage("Now you have " + count + " tasks in the list.");
+        ui.showMessage(
+                "Got it! I've added this task:\n"
+                        + "  " + newTask + "\n"
+                        + "Now you have " + count + " tasks in the list."
+        );
 
         return count;
     }
@@ -553,10 +569,12 @@ public class Bit {
             return count;
         }
 
-        
-        ui.showMessage("Got it. I've added this task:");
-        ui.showMessage("  " + newTask);
-        ui.showMessage("Now you have " + count + " tasks in the list.");
+
+        ui.showMessage(
+                "Got it! I've added this task:\n"
+                        + "  " + newTask + "\n"
+                        + "Now you have " + count + " tasks in the list."
+        );
         
 
         return count;
@@ -572,31 +590,30 @@ public class Bit {
      * @param count   Number of tasks currently in the list
      */
     private static void handleFind(Ui ui, String command, Task[] tasks, int count) {
-        String keyword = command.substring(5).trim(); // after "find "
+        String keyword = command.substring(5).trim();
 
         if (keyword.isEmpty()) {
-            
             ui.showMessage("Please provide a keyword to search.");
-            
             return;
         }
 
-        
-        ui.showMessage("Here are the matching tasks in your list:");
+        StringBuilder sb = new StringBuilder();
+        sb.append("Here are the matching tasks in your list:\n");
 
         int matchCount = 0;
-
         for (int i = 0; i < count; i++) {
             if (tasks[i].containsKeyword(keyword)) {
                 matchCount++;
-                ui.showMessage(matchCount + "." + tasks[i]);
+                sb.append(matchCount).append(". ").append(tasks[i]).append("\n");
             }
         }
 
         if (matchCount == 0) {
             ui.showMessage("No matching tasks found.");
+            return;
         }
-        
+
+        ui.showMessage(sb.toString().trim());
     }
 
 }

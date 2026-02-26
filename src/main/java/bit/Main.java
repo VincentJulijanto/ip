@@ -553,8 +553,8 @@ public class Main extends Application {
 
         String cleaned = welcome.replace(Ui.LINE, "").trim();
 
-        int commandsIdx = cleaned.indexOf("Commands:");
-        int tipsIdx = cleaned.indexOf("Tips:");
+        int commandsIdx = cleaned.indexOf("\uD83D\uDCCC Available Commands:");
+        int tipsIdx = cleaned.indexOf("\uD83D\uDCA1 Helpful Tips:");
 
         String intro = cleaned;
         String commands = "";

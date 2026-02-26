@@ -91,27 +91,30 @@ public class Ui {
         pause(1050);
         write("");
 
-        write("Commands:");
-        write("-  todo <description>");
-        write("-  deadline <description> /by <date>");
-        write("-  event <description> /from <start> /to <end>");
-        write("-  list");
-        write("-  mark <number>");
-        write("-  unmark <number>");
-        write("-  delete <number>");
-        write("-  find <keyword>");
-        write("-  bye");
+        write("📌 Available Commands:");
+        write("         •  todo <description>");
+        write("         •  deadline <description> /by <date>");
+        write("         •  event <description> /from <start> /to <end>");
+        write("         •  list");
+        write("         •  mark <number>");
+        write("         •  unmark <number>");
+        write("         •  update <number> <new details>");
+        write("         •  delete <number>");
+        write("         •  find <keyword>");
+        write("         •  bye");
         write("");
         pause(950);
 
-        write("Tips:");
-        write("  • Dates can be written as:");
-        write("      YYYY-MM-DD          (e.g. 2029-12-30)");
-        write("      YYYY-MM-DD HHmm     (e.g. 2029-12-30 1400)");
+        write("💡 Helpful Tips:");
+        write("         • Dates can be written as:");
+        write("             YYYY-MM-DD          (e.g. 2029-12-30)");
+        write("             YYYY-MM-DD HHmm     (e.g. 2029-12-30 1400)");
         write("");
-        write("  • '/' is optional:");
-        write("      deadline submit report by 2029-12-30");
-        write("      event meeting from 2029-12-30 to 2029-12-30");
+        write("         • The '/' symbol is optional:");
+        write("             deadline submit report by 2029-12-30");
+        write("             event meeting from 2029-12-30 to 2029-12-30");
+        write("");
+        write("Alright! I'm ready whenever you are 🚀");
 
         write(LINE);
     }
