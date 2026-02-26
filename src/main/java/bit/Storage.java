@@ -216,7 +216,8 @@ public class Storage {
         assert description != null && !description.isBlank()
                 : "description must be non-null and non-blank";
 
-        if (type.equals("T")) {
+        switch (type) {
+        case TYPE_TODO:
             return new Todo(description);
         case TYPE_DEADLINE:
             return parseDeadline(description, extra);
@@ -341,5 +342,30 @@ public class Storage {
         }
 
         return "";
+    }
+    /**
+     * Converts a task into a single line for file storage:
+     * TYPE | DONE | DESCRIPTION | EXTRA
+     *
+     * <p><b>Assumption:</b> {@code t} is not {@code null}.
+     *
+     * @param t Task instance.
+     * @return A formatted line suitable for writing to the data file.
+     */
+    private String toFileLine(Task t) {
+        assert t != null : "Task must not be null";
+
+        String type = getTypeCode(t);
+        String done = t.isDone() ? DONE : NOT_DONE;
+        String description = t.getDescription();
+
+        // description should never be null in a valid Task
+        if (description == null) {
+            description = "";
+        }
+
+        String extra = getExtraForFile(t);
+
+        return type + " | " + done + " | " + description + " | " + extra;
     }
 }

@@ -9,9 +9,6 @@ import java.time.format.DateTimeFormatter;
  */
 public class Event extends Task {
 
-    private final LocalDateTime from;
-    private final LocalDateTime to;
-
     private static final DateTimeFormatter OUTPUT_DATE =
             DateTimeFormatter.ofPattern("MMM dd yyyy");
 
@@ -46,41 +43,19 @@ public class Event extends Task {
         this.to = to;
     }
 
-    /**
-     * Returns the start date and time of the event.
-     *
-     * @return Start datetime (non-null).
-     */
     public LocalDateTime getFrom() {
         return from;
     }
 
-    /**
-     * Returns the end date and time of the event.
-     *
-     * @return End datetime (non-null).
-     */
     public LocalDateTime getTo() {
         return to;
     }
 
     @Override
     public String toString() {
-        // Defensive fallback in case assertions are disabled and a bug slips through.
-        if (from == null || to == null) {
-            return "[E]" + super.toString() + " (from: ? to: ?)";
-        }
-
-        boolean startHasTime = !(from.getHour() == 0 && from.getMinute() == 0);
-        boolean endHasTime = !(to.getHour() == 0 && to.getMinute() == 0);
-
-        String fromStr = startHasTime
-                ? from.format(OUTPUT_DATETIME)
-                : from.toLocalDate().format(OUTPUT_DATE);
-
-        String toStr = endHasTime
-                ? to.format(OUTPUT_DATETIME)
-                : to.toLocalDate().format(OUTPUT_DATE);
+        // If you always store datetime, this will format consistently.
+        String fromStr = from.format(OUTPUT_DATETIME);
+        String toStr = to.format(OUTPUT_DATETIME);
 
         return "[E]" + super.toString()
                 + " (from: " + fromStr

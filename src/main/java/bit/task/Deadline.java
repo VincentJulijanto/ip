@@ -93,12 +93,12 @@ public class Deadline extends Task {
 
     @Override
     public String toString() {
-
         if (byDateTime != null) {
-            return byDateTime.format(OUTPUT_DATETIME);
+            return "[D]" + super.toString()
+                    + " (by: " + byDateTime.format(OUTPUT_DATETIME) + ")";
         }
 
         return "[D]" + super.toString()
-                + " (by: " + formatDeadline() + ")";
+                + " (by: " + byDate.format(OUTPUT_DATE) + ")";
     }
 }
