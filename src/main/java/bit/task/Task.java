@@ -7,7 +7,7 @@ package bit.task;
 public class Task {
 
     /** Non-null, non-blank task description. */
-    protected final String description;
+    protected String description;
 
     /** Whether the task has been marked as done. */
     protected boolean isDone;
@@ -77,6 +77,24 @@ public class Task {
     }
 
     /**
+     * Updates the description of this task.
+     *
+     * <p><b>Assumptions:</b>
+     * <ul>
+     *   <li>{@code description} is not {@code null}.</li>
+     *   <li>{@code description} is not blank.</li>
+     * </ul>
+     *
+     * @param description The new description of the task.
+     */
+    public void setDescription(String description) {
+        assert description != null : "Task description must not be null";
+        assert !description.isBlank() : "Task description must not be blank";
+
+        this.description = description;
+    }
+
+    /**
      * Checks whether the task description contains the given keyword.
      * The comparison is case-insensitive.
      *
@@ -91,11 +109,6 @@ public class Task {
      */
     public boolean containsKeyword(String keyword) {
         assert keyword != null : "Keyword must not be null";
-
-        // Defensive: even if asserts are disabled, avoid NPE in production runs.
-        if (keyword == null) {
-            return false;
-        }
 
         return description.toLowerCase().contains(keyword.toLowerCase());
     }

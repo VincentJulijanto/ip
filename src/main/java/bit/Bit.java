@@ -114,6 +114,11 @@ public class Bit {
             return ui.endCapture();
         }
 
+        if (command.startsWith("update ")) {
+            count = handleUpdate(ui, storage, input, tasks, count);
+            return ui.endCapture();
+        }
+
         if (command.startsWith("todo ")) {
             count = handleTodo(ui, storage, input, tasks, count);
             return ui.endCapture();
@@ -307,6 +312,63 @@ public class Bit {
         ui.showMessage("Noted. I've removed this task:");
         ui.showMessage("  " + removed);
         ui.showMessage("Now you have " + count + " tasks in the list.");
+
+        return count;
+    }
+
+    /**
+     * Updates the description of an existing task.
+     *
+     * The command format is:
+     * update <task number> <new description>
+     *
+     * Example:
+     * update 2 submit final report
+     *
+     * @param ui User interface used to display messages
+     * @param storage Storage used to persist updated tasks
+     * @param input Full user input containing the update command
+     * @param tasks Array containing all stored tasks
+     * @param count Number of tasks currently in the list
+     * @return Updated number of tasks (unchanged unless saving fails)
+     */
+    private static int handleUpdate(Ui ui, Storage storage, String input, Task[] tasks, int count) {
+        String rest = input.substring(7).trim(); // after "update "
+
+        if (rest.isEmpty()) {
+            ui.showMessage("Please use: update <task number> <new description>");
+            return count;
+        }
+
+        String[] parts = rest.split("\\s+", 2);
+
+        if (parts.length < 2) {
+            ui.showMessage("Please use: update <task number> <new description>");
+            return count;
+        }
+
+        int idx = parseIndex(parts[0]);
+        String newDesc = parts[1].trim();
+
+        if (idx < 1 || idx > count) {
+            ui.showMessage("Invalid task number.");
+            return count;
+        }
+
+        if (newDesc.isEmpty()) {
+            ui.showMessage("New description cannot be empty.");
+            return count;
+        }
+
+        Task task = tasks[idx - 1];
+        task.setDescription(newDesc);
+
+        if (!saveOrShowError(ui, storage, tasks, count)) {
+            return count;
+        }
+
+        ui.showMessage("Nice! I've updated this task:");
+        ui.showMessage("  " + task);
 
         return count;
     }
