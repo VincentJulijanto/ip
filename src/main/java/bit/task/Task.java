@@ -15,6 +15,9 @@ public class Task {
      * @param description task description
      */
     public Task(String description) {
+        assert description != null && !description.isBlank()
+                : "Task description must not be null/blank";
+
         this.description = description;
         this.isDone = false;
     }
@@ -23,14 +26,14 @@ public class Task {
      * Marks the task as done.
      */
     public void markDone() {
-        isDone = true;
+        this.isDone = true;
     }
 
     /**
      * Marks the task as not done.
      */
     public void markUndone() {
-        isDone = false;
+        this.isDone = false;
     }
 
     /**
@@ -39,7 +42,7 @@ public class Task {
      * @return {@code true} if the task is completed, {@code false} otherwise
      */
     public boolean isDone() {
-        return isDone;
+        return this.isDone;
     }
 
     /**
@@ -48,7 +51,7 @@ public class Task {
      * @return "X" if done, otherwise " "
      */
     public String getStatusIcon() {
-        return isDone ? "X" : " ";
+        return this.isDone ? "X" : " ";
     }
 
     /**
@@ -57,7 +60,7 @@ public class Task {
      * @return task description
      */
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     /**
@@ -69,11 +72,12 @@ public class Task {
      *         {@code false} otherwise
      */
     public boolean containsKeyword(String keyword) {
-        return description.toLowerCase().contains(keyword.toLowerCase());
+        assert keyword != null : "Keyword must not be null";
+        return this.description.toLowerCase().contains(keyword.toLowerCase());
     }
 
     @Override
     public String toString() {
-        return "[" + getStatusIcon() + "] " + description;
+        return "[" + getStatusIcon() + "] " + this.description;
     }
 }

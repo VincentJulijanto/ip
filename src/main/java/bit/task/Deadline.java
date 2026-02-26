@@ -27,6 +27,9 @@ public class Deadline extends Task {
      */
     public Deadline(String description, LocalDate by) {
         super(description);
+
+        assert by != null : "Deadline date must not be null";
+
         this.byDate = by;
         this.byDateTime = null;
     }
@@ -39,6 +42,9 @@ public class Deadline extends Task {
      */
     public Deadline(String description, LocalDateTime by) {
         super(description);
+
+        assert by != null : "Deadline datetime must not be null";
+
         this.byDate = null;
         this.byDateTime = by;
     }
@@ -50,6 +56,9 @@ public class Deadline extends Task {
      * @return Deadline date
      */
     public LocalDate getBy() {
+        assert byDate != null || byDateTime != null
+                : "Deadline must have either byDate or byDateTime";
+
         if (byDate != null) {
             return byDate;
         }
@@ -65,13 +74,16 @@ public class Deadline extends Task {
         return byDateTime;
     }
 
+    private String formatDeadline() {
+        if (byDateTime != null) {
+            return byDateTime.format(OUTPUT_DATETIME);
+        }
+        return byDate.format(OUTPUT_DATE);
+    }
+
     @Override
     public String toString() {
-        if (byDateTime != null) {
-            return "[D]" + super.toString()
-                    + " (by: " + byDateTime.format(OUTPUT_DATETIME) + ")";
-        }
         return "[D]" + super.toString()
-                + " (by: " + byDate.format(OUTPUT_DATE) + ")";
+                + " (by: " + formatDeadline() + ")";
     }
 }

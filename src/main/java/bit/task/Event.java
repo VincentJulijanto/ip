@@ -8,11 +8,13 @@ import java.time.format.DateTimeFormatter;
  */
 public class Event extends Task {
 
-    private final LocalDateTime from;
-    private final LocalDateTime to;
-
+    private static final DateTimeFormatter OUTPUT_DATE =
+            DateTimeFormatter.ofPattern("MMM dd yyyy");
     private static final DateTimeFormatter OUTPUT_DATETIME =
             DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
+
+    private final LocalDateTime from;
+    private final LocalDateTime to;
 
     /**
      * Creates an event task with a start and end time.
@@ -23,6 +25,11 @@ public class Event extends Task {
      */
     public Event(String description, LocalDateTime from, LocalDateTime to) {
         super(description);
+
+        assert from != null : "Event start datetime must not be null";
+        assert to != null : "Event end datetime must not be null";
+        assert !to.isBefore(from) : "Event end datetime must not be before start datetime";
+
         this.from = from;
         this.to = to;
     }
@@ -47,26 +54,16 @@ public class Event extends Task {
 
     @Override
     public String toString() {
-
-        DateTimeFormatter dateFormatter =
-                DateTimeFormatter.ofPattern("MMM dd yyyy");
-
-        DateTimeFormatter dateTimeFormatter =
-                DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
-
-        boolean startHasTime =
-                !(from.getHour() == 0 && from.getMinute() == 0);
-
-        boolean endHasTime =
-                !(to.getHour() == 0 && to.getMinute() == 0);
+        boolean startHasTime = !(from.getHour() == 0 && from.getMinute() == 0);
+        boolean endHasTime = !(to.getHour() == 0 && to.getMinute() == 0);
 
         String fromStr = startHasTime
-                ? from.format(dateTimeFormatter)
-                : from.toLocalDate().format(dateFormatter);
+                ? from.format(OUTPUT_DATETIME)
+                : from.toLocalDate().format(OUTPUT_DATE);
 
         String toStr = endHasTime
-                ? to.format(dateTimeFormatter)
-                : to.toLocalDate().format(dateFormatter);
+                ? to.format(OUTPUT_DATETIME)
+                : to.toLocalDate().format(OUTPUT_DATE);
 
         return "[E]" + super.toString()
                 + " (from: " + fromStr
