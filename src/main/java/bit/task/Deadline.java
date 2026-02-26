@@ -6,13 +6,17 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * Represents a task with a deadline.
- * Supports deadlines with either a date only (YYYY-MM-DD)
- * or a date + time (YYYY-MM-DD HHmm).
+ * A {@code Deadline} can store either:
+ * <ul>
+ *     <li>a date only</li>
+ *     <li>a date and time</li>
+ * </ul>
  */
 public class Deadline extends Task {
 
     private static final DateTimeFormatter OUTPUT_DATE =
             DateTimeFormatter.ofPattern("MMM dd yyyy");
+
     private static final DateTimeFormatter OUTPUT_DATETIME =
             DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
 
@@ -22,8 +26,13 @@ public class Deadline extends Task {
     /**
      * Creates a deadline task with a date only.
      *
+     * <p><b>Assumptions:</b>
+     * <ul>
+     *   <li>{@code by} is not {@code null}</li>
+     * </ul>
+     *
      * @param description Description of the task
-     * @param by Deadline date
+     * @param by Deadline date (non-null)
      */
     public Deadline(String description, LocalDate by) {
         super(description);
@@ -37,13 +46,18 @@ public class Deadline extends Task {
     /**
      * Creates a deadline task with a specific date and time.
      *
+     * <p><b>Assumptions:</b>
+     * <ul>
+     *   <li>{@code by} is not {@code null}</li>
+     * </ul>
+     *
      * @param description Description of the task
-     * @param by Deadline date and time
+     * @param by Deadline date and time (non-null)
      */
     public Deadline(String description, LocalDateTime by) {
         super(description);
 
-        assert by != null : "Deadline datetime must not be null";
+        assert by != null : "Deadline date-time must not be null";
 
         this.byDate = null;
         this.byDateTime = by;
@@ -56,33 +70,34 @@ public class Deadline extends Task {
      * @return Deadline date
      */
     public LocalDate getBy() {
+
+        // Defensive check in case assertions are disabled
         assert byDate != null || byDateTime != null
-                : "Deadline must have either byDate or byDateTime";
+                : "Deadline must have either a date or datetime";
 
         if (byDate != null) {
             return byDate;
         }
+
         return byDateTime.toLocalDate();
     }
 
     /**
      * Returns the deadline date and time if this task includes a time.
      *
-     * @return Deadline date and time, or {@code null} if this deadline is date-only
+     * @return Deadline datetime, or {@code null} if this deadline is date-only
      */
     public LocalDateTime getByDateTime() {
         return byDateTime;
     }
 
-    private String formatDeadline() {
+    @Override
+    public String toString() {
+
         if (byDateTime != null) {
             return byDateTime.format(OUTPUT_DATETIME);
         }
-        return byDate.format(OUTPUT_DATE);
-    }
 
-    @Override
-    public String toString() {
         return "[D]" + super.toString()
                 + " (by: " + formatDeadline() + ")";
     }

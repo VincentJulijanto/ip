@@ -16,15 +16,18 @@ import bit.task.Todo;
  * Handles loading tasks from disk and saving tasks back to disk.
  *
  * <p>File format (one task per line):
+ * <pre>
  * TYPE | DONE | DESCRIPTION | EXTRA
+ * </pre>
  *
- * <p>TYPE: T / D / E<br>
- * DONE: 0 (not done) / 1 (done)<br>
+ * <p>TYPE: {@code T} / {@code D} / {@code E}<br>
+ * DONE: {@code 0} (not done) / {@code 1} (done)<br>
  * EXTRA:
  * <ul>
  *   <li>Todo: empty</li>
- *   <li>Deadline: yyyy-MM-dd OR yyyy-MM-dd HHmm (legacy may be wrapped like "(by: yyyy-MM-dd)")</li>
- *   <li>Event: "yyyy-MM-dd HHmm | yyyy-MM-dd HHmm"</li>
+ *   <li>Deadline: {@code yyyy-MM-dd} OR {@code yyyy-MM-dd HHmm}
+ *       (legacy may be wrapped like {@code "(by: yyyy-MM-dd)"})</li>
+ *   <li>Event: {@code "yyyy-MM-dd HHmm | yyyy-MM-dd HHmm"}</li>
  * </ul>
  */
 public class Storage {
@@ -43,13 +46,20 @@ public class Storage {
     /**
      * Creates a Storage instance that reads from and writes to the given file path.
      *
-     * @param filePath Path to the task data file.
+     * <p><b>Assumption:</b> {@code filePath} is not {@code null}.
+     *
+     * @param filePath Path to the task data file (non-null).
      */
     public Storage(Path filePath) {
         assert filePath != null : "Storage filePath must not be null";
         this.filePath = filePath;
     }
 
+    /**
+     * Ensures the data file exists by creating its parent directories and the file if needed.
+     *
+     * @throws IOException If directory or file creation fails.
+     */
     private void ensureDataFileExists() throws IOException {
         assert filePath != null : "Storage filePath must not be null";
 
@@ -63,10 +73,12 @@ public class Storage {
     }
 
     /**
-     * Handles legacy formats like "(by: 2019-10-15)" or "by: 2019-10-15".
+     * Unwraps legacy deadline formats like {@code "(by: 2019-10-15)"} or {@code "by: 2019-10-15"}.
      *
-     * @param extra raw extra column from file (may be null)
-     * @return unwrapped extra content, or empty string if {@code extra} is null
+     * <p><b>Assumption:</b> {@code extra} may be {@code null}.
+     *
+     * @param extra The raw extra column from file.
+     * @return Unwrapped extra content, or empty string if {@code extra} is {@code null}.
      */
     private String unwrapBy(String extra) {
         if (extra == null) {
@@ -90,10 +102,18 @@ public class Storage {
     }
 
     /**
-     * Loads tasks from disk into {@code tasks}.
+     * Loads tasks from disk into the given {@code tasks} array.
      *
-     * @param tasks array to populate (non-null)
-     * @return number of tasks loaded (0 if file missing/unreadable)
+     * <p><b>Assumptions:</b>
+     * <ul>
+     *   <li>{@code tasks} is not {@code null}.</li>
+     *   <li>{@code tasks.length} represents the maximum capacity to load.</li>
+     * </ul>
+     *
+     * <p>If the file does not exist or cannot be read, this method returns {@code 0}.
+     *
+     * @param tasks The array to populate.
+     * @return Number of tasks loaded (0 if file missing/unreadable).
      */
     public int loadTasks(Task[] tasks) {
         assert tasks != null : "tasks array must not be null";
@@ -180,17 +200,23 @@ public class Storage {
     /**
      * Parses a single task from file data.
      *
-     * @param type T / D / E
-     * @param description task description (non-null, non-blank)
-     * @param extra extra column data (may be empty)
-     * @return Task instance, or null if invalid/unparseable
+     * <p><b>Assumptions:</b>
+     * <ul>
+     *   <li>{@code type} is one of {@code "T"}, {@code "D"}, or {@code "E"}.</li>
+     *   <li>{@code description} is non-null and non-blank.</li>
+     * </ul>
+     *
+     * @param type Task type code ("T", "D", "E").
+     * @param description Task description.
+     * @param extra Extra column data (may be empty).
+     * @return Task instance, or {@code null} if invalid/unparseable.
      */
     private Task parseTask(String type, String description, String extra) {
         assert type != null : "type must not be null";
-        assert description != null && !description.isBlank() : "description must be non-null and non-blank";
+        assert description != null && !description.isBlank()
+                : "description must be non-null and non-blank";
 
-        switch (type) {
-        case TYPE_TODO:
+        if (type.equals("T")) {
             return new Todo(description);
         case TYPE_DEADLINE:
             return parseDeadline(description, extra);
@@ -235,11 +261,17 @@ public class Storage {
     }
 
     /**
-     * Saves {@code count} tasks from {@code tasks} to disk in the same file format.
+     * Saves the first {@code count} tasks from {@code tasks} to disk using the same file format.
      *
-     * @param tasks array of tasks (non-null)
-     * @param count number of tasks to save (0..tasks.length)
-     * @throws IOException if writing fails
+     * <p><b>Assumptions:</b>
+     * <ul>
+     *   <li>{@code tasks} is not {@code null}.</li>
+     *   <li>{@code count} is within {@code [0, tasks.length]}.</li>
+     * </ul>
+     *
+     * @param tasks The array of tasks.
+     * @param count Number of tasks to save.
+     * @throws IOException If writing fails.
      */
     public void saveTasks(Task[] tasks, int count) throws IOException {
         assert tasks != null : "tasks array must not be null";
@@ -260,14 +292,14 @@ public class Storage {
         }
     }
 
-    private String toFileLine(Task t) {
-        String typeCode = getTypeCode(t);
-        String done = t.isDone() ? DONE : NOT_DONE;
-        String desc = t.getDescription();
-        String extra = getExtraForFile(t);
-        return typeCode + " | " + done + " | " + desc + " | " + extra;
-    }
-
+    /**
+     * Converts a task object into its file type code.
+     *
+     * <p><b>Assumption:</b> {@code t} is not {@code null}.
+     *
+     * @param t Task instance.
+     * @return File type code ("T", "D", or "E").
+     */
     private String getTypeCode(Task t) {
         assert t != null : "Task must not be null";
 
@@ -283,6 +315,14 @@ public class Storage {
         return TYPE_TODO; // safe default
     }
 
+    /**
+     * Converts a task object into its "extra" column representation for file storage.
+     *
+     * <p><b>Assumption:</b> {@code t} is not {@code null}.
+     *
+     * @param t Task instance.
+     * @return Extra column string for storage (empty for Todo).
+     */
     private String getExtraForFile(Task t) {
         assert t != null : "Task must not be null";
 

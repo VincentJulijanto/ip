@@ -4,14 +4,21 @@ import java.util.Scanner;
 
 /**
  * Ui handles all user interaction for the Bit application.
- * It is responsible for displaying messages, reading user input,
- * and formatting output shown in the command-line interface.
+ * <p>
+ * By default, Ui prints messages to the console (CLI mode).
+ * For the GUI, Ui can be switched into "capture mode" where output is collected
+ * into an internal buffer and returned as a String.
  */
 public class Ui {
-    public static final String LINE =
-            "____________________________________________________________";
+
+    /** Divider line used for consistent UI output. */
+    public static final String LINE = "____________________________________________________________";
 
     private final Scanner scanner;
+
+    // ===== GUI support: capture mode =====
+    private final StringBuilder buffer = new StringBuilder();
+    private boolean captureMode = false;
 
     /**
      * Creates a new Ui instance and initializes the scanner
@@ -21,8 +28,47 @@ public class Ui {
         scanner = new Scanner(System.in);
     }
 
-    // Small pause
+    /**
+     * Enables capture mode. When enabled, Ui stores output in an internal buffer
+     * instead of printing to the console. Used by the JavaFX GUI.
+     */
+    public void beginCapture() {
+        captureMode = true;
+        buffer.setLength(0);
+    }
+
+    /**
+     * Disables capture mode and returns the accumulated output.
+     *
+     * @return captured output text (trimmed)
+     */
+    public String endCapture() {
+        captureMode = false;
+        return buffer.toString().trim();
+    }
+
+    /**
+     * Writes output either to console (CLI) or to buffer (GUI capture mode).
+     *
+     * @param s text to output
+     */
+    private void write(String s) {
+        if (captureMode) {
+            buffer.append(s).append("\n");
+        } else {
+            System.out.println(s);
+        }
+    }
+
+    /**
+     * Sleeps briefly (CLI only). In capture mode, this is a no-op so GUI won't freeze.
+     *
+     * @param ms milliseconds to pause
+     */
     private void pause(int ms) {
+        if (captureMode) {
+            return; // never block GUI
+        }
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
@@ -35,45 +81,43 @@ public class Ui {
      * and usage tips to the user when the program starts.
      */
     public void showWelcome() {
-        System.out.println(LINE);
-        System.out.println("Hello! I'm Bit 🤖");
-        System.out.println("Your personal task manager.");
+        write(LINE);
+        write("Hello! I'm Bit 🤖");
+        write("Your personal task manager.");
         pause(1050);
-        System.out.println();
+        write("");
 
-        System.out.println("What can I do for you?");
+        write("What can I do for you?");
         pause(1050);
-        System.out.println();
+        write("");
 
-        System.out.println("Commands:");
-        pause(1050);
-        System.out.println("  todo <description>");
-        System.out.println("  deadline <description> /by <date>");
-        System.out.println("  event <description> /from <start> /to <end>");
-        System.out.println("  list");
-        System.out.println("  mark <number>");
-        System.out.println("  unmark <number>");
-        System.out.println("  delete <number>");
-        System.out.println("  find <keyword>");
-        System.out.println("  bye");
-        System.out.println();
+        write("Commands:");
+        write("-  todo <description>");
+        write("-  deadline <description> /by <date>");
+        write("-  event <description> /from <start> /to <end>");
+        write("-  list");
+        write("-  mark <number>");
+        write("-  unmark <number>");
+        write("-  delete <number>");
+        write("-  find <keyword>");
+        write("-  bye");
+        write("");
         pause(950);
 
-        System.out.println("Tips:");
-        pause(950);
-        System.out.println("  • Dates can be written as:");
-        System.out.println("      YYYY-MM-DD          (e.g. 2029-12-30)");
-        System.out.println("      YYYY-MM-DD HHmm     (e.g. 2029-12-30 1400)");
-        System.out.println();
-        System.out.println("  • '/' is optional:");
-        System.out.println("      deadline submit report by 2029-12-30");
-        System.out.println("      event meeting from 2029-12-30 to 2029-12-30");
+        write("Tips:");
+        write("  • Dates can be written as:");
+        write("      YYYY-MM-DD          (e.g. 2029-12-30)");
+        write("      YYYY-MM-DD HHmm     (e.g. 2029-12-30 1400)");
+        write("");
+        write("  • '/' is optional:");
+        write("      deadline submit report by 2029-12-30");
+        write("      event meeting from 2029-12-30 to 2029-12-30");
 
-        System.out.println(LINE);
+        write(LINE);
     }
 
     /**
-     * Reads the next command entered by the user.
+     * Reads the next command entered by the user (CLI only).
      *
      * @return The trimmed command string entered by the user
      */
@@ -81,11 +125,9 @@ public class Ui {
         return scanner.nextLine().trim();
     }
 
-    /**
-     * Prints a divider line used to separate sections of output.
-     */
+    /** Prints a divider line used to separate sections of output. */
     public void showLine() {
-        System.out.println(LINE);
+        write(LINE);
     }
 
     /**
@@ -94,21 +136,15 @@ public class Ui {
      * @param message The message to display
      */
     public void showMessage(String message) {
-        System.out.println(message);
+        write(message);
     }
 
-    /**
-     * Displays the goodbye message when the user exits the program.
-     */
+    /** Displays the goodbye message when the user exits the program. */
     public void showBye() {
-        System.out.println(LINE);
-        System.out.println("Bye. Hope to see you again soon!");
-        System.out.println(LINE);
+        write("Bye. Hope to see you again soon!");
     }
 
-    /**
-     * Closes the scanner used for reading user input.
-     */
+    /** Closes the scanner used for reading user input (CLI only). */
     public void close() {
         scanner.close();
     }
