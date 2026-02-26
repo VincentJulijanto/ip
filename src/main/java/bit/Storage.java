@@ -85,10 +85,9 @@ public class Storage {
             List<String> lines = Files.readAllLines(filePath);
             int count = 0;
 
-            for (String line : lines) {
-                if (line == null || line.trim().isEmpty()) {
-                    continue;
-                }
+            for (String line : lines.stream()
+                    .filter(l -> l != null && !l.trim().isEmpty())
+                    .toList()) {
 
                 // Expected: TYPE | DONE | DESC | EXTRA
                 String[] parts = line.split("\\s*\\|\\s*", -1);
