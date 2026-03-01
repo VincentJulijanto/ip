@@ -10,26 +10,34 @@ repositories {
 }
 
 dependencies {
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.0'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+
+    def fx = '17.0.7'
+
+    // Cross-platform JavaFX natives (win/mac/linux)
+    runtimeOnly "org.openjfx:javafx-base:${fx}:win"
+    runtimeOnly "org.openjfx:javafx-base:${fx}:mac"
+    runtimeOnly "org.openjfx:javafx-base:${fx}:linux"
+
+    runtimeOnly "org.openjfx:javafx-graphics:${fx}:win"
+    runtimeOnly "org.openjfx:javafx-graphics:${fx}:mac"
+    runtimeOnly "org.openjfx:javafx-graphics:${fx}:linux"
+
+    runtimeOnly "org.openjfx:javafx-controls:${fx}:win"
+    runtimeOnly "org.openjfx:javafx-controls:${fx}:mac"
+    runtimeOnly "org.openjfx:javafx-controls:${fx}:linux"
+
+    runtimeOnly "org.openjfx:javafx-fxml:${fx}:win"
+    runtimeOnly "org.openjfx:javafx-fxml:${fx}:mac"
+    runtimeOnly "org.openjfx:javafx-fxml:${fx}:linux"
 }
 
 test {
     useJUnitPlatform()
-
-    testLogging {
-        events "passed", "skipped", "failed"
-
-        showExceptions true
-        exceptionFormat "full"
-        showCauses true
-        showStackTraces true
-        showStandardStreams = false
-    }
 }
 
 application {
-    // GUI entry point (you confirmed Main extends javafx.application.Application)
     mainClass.set("bit.Launcher")
 }
 
@@ -39,13 +47,16 @@ javafx {
 }
 
 shadowJar {
-    archiveBaseName = "bit"
-    archiveClassifier = null
-    archiveVersion = null
+    archiveBaseName.set("bit")
+    archiveClassifier.set("")
+    archiveVersion.set("")
 
     manifest {
         attributes "Main-Class": "bit.Launcher"
     }
+
+    // IMPORTANT: force packaging of runtimeClasspath (includes the OS-specific JavaFX natives)
+    configurations = [project.configurations.runtimeClasspath]
 }
 
 run {
