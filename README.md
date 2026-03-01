@@ -88,7 +88,7 @@ src
              ├─ Ui
              ├─ Bit
              ├─ Main
-             └─ Launcher
+             └─ bit.Launcher
 ```
 
 ---
