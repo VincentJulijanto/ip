@@ -30,7 +30,7 @@ test {
 
 application {
     // GUI entry point (you confirmed Main extends javafx.application.Application)
-    mainClass.set("bit.Main")
+    mainClass.set("bit.Launcher")
 }
 
 javafx {
@@ -41,10 +41,10 @@ javafx {
 shadowJar {
     archiveBaseName = "bit"
     archiveClassifier = null
+    archiveVersion = null
 
-    // Ensure the jar runs the GUI entry point
     manifest {
-        attributes "Main-Class": "bit.Main"
+        attributes "Main-Class": "bit.Launcher"
     }
 }
 
