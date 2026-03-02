@@ -181,3 +181,129 @@
 2026-03-02T07:21:06.719776Z|ME|bye
 2026-03-02T07:21:07.146424Z|BIT|Bye. Hope to see you again soon!
 2026-03-02T07:21:07.146907Z|SESSION_END|BYE
+2026-03-02T08:15:17.871409Z|ME|list
+2026-03-02T08:15:18.297644Z|BIT|Here are the tasks in your list:\n 1) [T][X] hello\n 2) [T][ ] read book
+2026-03-02T08:15:19.872486Z|ME|bye
+2026-03-02T08:15:20.297547Z|BIT|Bye. Hope to see you again soon!
+2026-03-02T08:15:20.298093Z|SESSION_END|BYE
+2026-03-02T08:15:37.360889Z|ME|todo read booktodo finish assignment
+2026-03-02T08:15:37.787031Z|BIT|Got it! I've added this task:\n  [T][ ] read booktodo finish assignment\nNow you have 3 tasks in the list.
+2026-03-02T08:15:47.087343Z|ME|todo read book todo finish assignment
+2026-03-02T08:15:47.515156Z|BIT|Got it! I've added this task:\n  [T][ ] read book todo finish assignment\nNow you have 4 tasks in the list.
+2026-03-02T08:16:00.274954Z|ME|list
+2026-03-02T08:16:00.702756Z|BIT|Here are the tasks in your list:\n 1) [T][X] hello\n 2) [T][ ] read book\n 3) [T][ ] read booktodo finish assignment\n 4) [T][ ] read book todo finish assignment
+2026-03-02T08:16:04.969018Z|ME|delete 3
+2026-03-02T08:16:05.394558Z|BIT|Noted. I've removed this task:\n  [T][ ] read booktodo finish assignment\nNow you have 3 tasks in the list.
+2026-03-02T08:16:06.892401Z|ME|delete 4
+2026-03-02T08:16:07.319131Z|BIT|Invalid task number.
+2026-03-02T08:16:12.417296Z|ME|delete 4
+2026-03-02T08:16:12.844082Z|BIT|Invalid task number.
+2026-03-02T08:16:15.483435Z|ME|delete 3
+2026-03-02T08:16:15.911093Z|BIT|Noted. I've removed this task:\n  [T][ ] read book todo finish assignment\nNow you have 2 tasks in the list.
+2026-03-02T08:16:22.608292Z|ME|delete 2
+2026-03-02T08:16:23.035967Z|BIT|Noted. I've removed this task:\n  [T][ ] read book\nNow you have 1 tasks in the list.
+2026-03-02T08:16:36.953843Z|ME|todo finish assignment
+2026-03-02T08:16:37.381634Z|BIT|Got it! I've added this task:\n  [T][ ] finish assignment\nNow you have 2 tasks in the list.
+2026-03-02T08:16:40.329880Z|ME|list
+2026-03-02T08:16:40.756495Z|BIT|Here are the tasks in your list:\n 1) [T][X] hello\n 2) [T][ ] finish assignment
+2026-03-02T08:16:44.056207Z|ME|mark 1
+2026-03-02T08:16:44.481794Z|BIT|Nice! I've marked this task as done:\n  [T][X] hello
+2026-03-02T08:16:47.154937Z|ME|mark 2
+2026-03-02T08:16:47.581621Z|BIT|Nice! I've marked this task as done:\n  [T][X] finish assignment
+2026-03-02T08:16:51.446588Z|ME|unmark 1
+2026-03-02T08:16:51.873341Z|BIT|OK, I've marked this task as not done yet:\n  [T][ ] hello
+2026-03-02T08:16:54.804943Z|ME|delete 2
+2026-03-02T08:16:55.231582Z|BIT|Noted. I've removed this task:\n  [T][X] finish assignment\nNow you have 1 tasks in the list.
+2026-03-02T08:17:00.741979Z|ME|deadline submit report /by 2026-03-10
+2026-03-02T08:17:01.168928Z|BIT|Got it! I've added this task:\n  [D][ ] submit report (by: Mar 10 2026)\nNow you have 2 tasks in the list.
+2026-03-02T08:17:06.941416Z|ME|deadline project demo /by 2026-03-10 1800
+2026-03-02T08:17:07.370192Z|BIT|Got it! I've added this task:\n  [D][ ] project demo (by: Mar 10 2026, 6:00PM)\nNow you have 3 tasks in the list.
+2026-03-02T08:17:12.533288Z|ME|list
+2026-03-02T08:17:12.960453Z|BIT|Here are the tasks in your list:\n 1) [T][ ] hello\n 2) [D][ ] submit report (by: Mar 10 2026)\n 3) [D][ ] project demo (by: Mar 10 2026, 6:00PM)
+2026-03-02T08:17:17.717984Z|ME|deadline test /by
+2026-03-02T08:17:18.143518Z|BIT|Please use: deadline <description> /by <time>
+2026-03-02T08:17:30.404984Z|ME|deadline test /by 2026
+2026-03-02T08:17:30.830910Z|BIT|Please use: YYYY-MM-DD or YYYY-MM-DD HHmm (e.g. 2019-10-15 or 2019-10-15 1400)
+2026-03-02T08:17:43.116358Z|ME|event meeting /from 2026-03-10 1800 /to 2026-03-10 2000
+2026-03-02T08:17:43.544114Z|BIT|Got it! I've added this task:\n  [E][ ] meeting (from: Mar 10 2026, 6:00PM to: Mar 10 2026, 8:00PM)\nNow you have 4 tasks in the list.
+2026-03-02T08:17:51.738857Z|ME|event conference /from 2026-04-01 0900 /to 2026-04-01 1700
+2026-03-02T08:17:52.164426Z|BIT|Got it! I've added this task:\n  [E][ ] conference (from: Apr 01 2026, 9:00AM to: Apr 01 2026, 5:00PM)\nNow you have 5 tasks in the list.
+2026-03-02T08:18:01.008952Z|ME|event wrong /from 2026-03-10 1800 /to 2026-03-10 1700
+2026-03-02T08:18:01.434996Z|BIT|OOPS! The end time must be after the start time.\nExample: event meeting /from 2026-03-10 1800 /to 2026-03-10 1900
+2026-03-02T08:18:13.654640Z|ME|event meeting
+2026-03-02T08:18:14.080626Z|BIT|Please use: event <description> /from <start> /to <end>
+2026-03-02T08:18:22.858701Z|ME|event meeting /from 2026-03-10
+2026-03-02T08:18:23.284727Z|BIT|Please use: event <description> /from <start> /to <end>
+2026-03-02T08:18:29.212117Z|ME|mark 1
+2026-03-02T08:18:29.639179Z|BIT|Nice! I've marked this task as done:\n  [T][X] hello
+2026-03-02T08:18:32.037254Z|ME|mark 2
+2026-03-02T08:18:32.464181Z|BIT|Nice! I've marked this task as done:\n  [D][X] submit report (by: Mar 10 2026)
+2026-03-02T08:18:33.580606Z|ME|mark 3
+2026-03-02T08:18:34.005788Z|BIT|Nice! I've marked this task as done:\n  [D][X] project demo (by: Mar 10 2026, 6:00PM)
+2026-03-02T08:18:41.720439Z|ME|unmark 2
+2026-03-02T08:18:42.147529Z|BIT|OK, I've marked this task as not done yet:\n  [D][ ] submit report (by: Mar 10 2026)
+2026-03-02T08:18:47.096411Z|ME|delete 1
+2026-03-02T08:18:47.522375Z|BIT|Noted. I've removed this task:\n  [T][X] hello\nNow you have 4 tasks in the list.
+2026-03-02T08:18:52.279887Z|ME|delete 2
+2026-03-02T08:18:52.705632Z|BIT|Noted. I've removed this task:\n  [D][X] project demo (by: Mar 10 2026, 6:00PM)\nNow you have 3 tasks in the list.
+2026-03-02T08:18:56.037925Z|ME|todo task1
+2026-03-02T08:18:56.464017Z|BIT|Got it! I've added this task:\n  [T][ ] task1\nNow you have 4 tasks in the list.
+2026-03-02T08:18:59.629617Z|ME|todo task
+2026-03-02T08:19:00.055589Z|BIT|Got it! I've added this task:\n  [T][ ] task\nNow you have 5 tasks in the list.
+2026-03-02T08:19:03.671309Z|ME|todo task2
+2026-03-02T08:19:04.097264Z|BIT|Got it! I've added this task:\n  [T][ ] task2\nNow you have 6 tasks in the list.
+2026-03-02T08:19:06.612190Z|ME|todo task3
+2026-03-02T08:19:07.038888Z|BIT|Got it! I've added this task:\n  [T][ ] task3\nNow you have 7 tasks in the list.
+2026-03-02T08:19:09.104716Z|ME|todo task4
+2026-03-02T08:19:09.530551Z|BIT|Got it! I've added this task:\n  [T][ ] task4\nNow you have 8 tasks in the list.
+2026-03-02T08:19:13.720549Z|ME|todo task5
+2026-03-02T08:19:14.147163Z|BIT|Got it! I've added this task:\n  [T][ ] task5\nNow you have 9 tasks in the list.
+2026-03-02T08:19:17.346209Z|ME|todo task6
+2026-03-02T08:19:17.771462Z|BIT|Got it! I've added this task:\n  [T][ ] task6\nNow you have 10 tasks in the list.
+2026-03-02T08:19:20.988131Z|ME|todo task7
+2026-03-02T08:19:21.414092Z|BIT|Got it! I've added this task:\n  [T][ ] task7\nNow you have 11 tasks in the list.
+2026-03-02T08:19:23.137484Z|ME|todo task8
+2026-03-02T08:19:23.563720Z|BIT|Got it! I've added this task:\n  [T][ ] task8\nNow you have 12 tasks in the list.
+2026-03-02T08:19:25.870441Z|ME|todo task9
+2026-03-02T08:19:26.297124Z|BIT|Got it! I've added this task:\n  [T][ ] task9\nNow you have 13 tasks in the list.
+2026-03-02T08:19:31.546335Z|ME|todo task10
+2026-03-02T08:19:31.971984Z|BIT|Got it! I've added this task:\n  [T][ ] task10\nNow you have 14 tasks in the list.
+2026-03-02T08:19:34.837143Z|ME|list
+2026-03-02T08:19:35.263534Z|BIT|Here are the tasks in your list:\n 1) [D][ ] submit report (by: Mar 10 2026)\n 2) [E][ ] meeting (from: Mar 10 2026, 6:00PM to: Mar 10 2026, 8:00PM)\n 3) [E][ ] conference (from: Apr 01 2026, 9:00AM to: Apr 01 2026, 5:00PM)\n 4) [T][ ] task1\n 5) [T][ ] task\n 6) [T][ ] task2\n 7) [T][ ] task3\n 8) [T][ ] task4\n 9) [T][ ] task5\n10) [T][ ] task6\n11) [T][ ] task7\n12) [T][ ] task8\n13) [T][ ] task9\n14) [T][ ] task10
+2026-03-02T08:19:49.750406Z|ME|mark
+2026-03-02T08:19:50.175421Z|BIT|Please provide a task number.
+2026-03-02T08:19:52.175357Z|ME|delete
+2026-03-02T08:19:52.600564Z|BIT|Please provide a task number.
+2026-03-02T08:19:55.325630Z|ME|randomcommand
+2026-03-02T08:19:55.750619Z|BIT|OOPS!!! I'm sorry, but I don't know what that means 😔
+2026-03-02T08:20:02.325577Z|ME|todo
+2026-03-02T08:20:02.750609Z|BIT|OOPS!!! I'm sorry, but I don't know what that means 😔
+2026-03-02T08:24:47.657090Z|ME|todo
+2026-03-02T08:24:48.081837Z|BIT|Please use: todo <description>
+2026-03-02T08:26:12.468461Z|ME|todo
+2026-03-02T08:26:12.893577Z|BIT|Please use: todo <description>
+2026-03-02T08:26:14.326260Z|ME|deadline
+2026-03-02T08:26:14.760258Z|BIT|OOPS!!! I'm sorry, but I don't know what that means 😔
+2026-03-02T08:26:17.485542Z|ME|event
+2026-03-02T08:26:17.918577Z|BIT|OOPS!!! I'm sorry, but I don't know what that means 😔
+2026-03-02T08:27:57.464258Z|ME|find
+2026-03-02T08:27:57.888723Z|BIT|OOPS!!! I'm sorry, but I don't know what that means 😔
+2026-03-02T08:29:35.180287Z|ME|find
+2026-03-02T08:29:35.604597Z|BIT|What do you want to find?\nTry: find <keyword>\nExample: find meeting
+2026-03-02T08:40:47.711676Z|ME|task
+2026-03-02T08:40:48.137103Z|BIT|OOPS!!! I'm sorry, but I don't know what that means 😔
+2026-03-02T08:40:50.361599Z|ME|todo
+2026-03-02T08:40:50.786966Z|BIT|Want to add something to your task list? 📝\nTell me what you need to do.\nExample: todo finish homework
+2026-03-02T08:42:27.044888Z|ME|find
+2026-03-02T08:42:27.482601Z|BIT|OOPS!!! I'm sorry, but I don't know what that means 😔
+2026-03-02T08:43:16.919564Z|ME|find
+2026-03-02T08:43:17.345136Z|BIT|What do you want to find? 🔎\nTry: find <keyword>\nExample: find meeting
+2026-03-02T08:43:51.754919Z|ME|find
+2026-03-02T08:43:52.178296Z|BIT|Looking for something? 🔍\nTell me the keyword and I'll search your tasks.\nExample: find meeting
+2026-03-02T08:43:56.087676Z|ME|todo
+2026-03-02T08:43:56.519972Z|BIT|Want to add something to your task list? 📝\nTell me what you need to do.\nExample: todo finish homework
+2026-03-02T08:43:59.612494Z|ME|deadline
+2026-03-02T08:44:00.036625Z|BIT|Got a deadline coming up? ⏰\nTell me the task and when it's due.\nExample: deadline submit report /by 2026-03-10 1800
+2026-03-02T08:44:16.013120Z|ME|bye
+2026-03-02T08:44:16.436664Z|BIT|Bye. Hope to see you again soon!
+2026-03-02T08:44:16.437214Z|SESSION_END|BYE

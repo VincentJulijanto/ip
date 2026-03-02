@@ -11,6 +11,7 @@ import java.time.format.DateTimeParseException;
 import bit.cli.Ui;
 import bit.storage.Storage;
 import bit.task.Task;
+import bit.task.TaskList;
 import bit.task.Todo;
 import bit.task.Deadline;
 import bit.task.Event;
@@ -33,8 +34,7 @@ public class Bit {
     // Persistent state for GUI + CLI
     private final Ui ui = new Ui();
     private final Storage storage;
-    private final Task[] tasks = new Task[MAX_TASKS];
-    private int count = 0;
+    private final TaskList taskList = new TaskList(MAX_TASKS);
 
     /**
      * Constructs a Bit instance, initializes storage, and loads tasks from disk.
@@ -42,7 +42,9 @@ public class Bit {
     public Bit() {
         Path filePath = Paths.get(DATA_FILE_PATH);
         storage = new Storage(filePath);
-        count = storage.loadTasks(tasks);
+
+        int loaded = storage.loadTasks(taskList.getInternalArray());
+        taskList.setCount(loaded);
     }
 
     /**
@@ -93,56 +95,373 @@ public class Bit {
         }
 
         if (command.equals("list")) {
-            handleList(ui, tasks, count);
+            ui.showMessage(taskList.formatList());
+            return ui.endCapture();
+        }
+
+        if (command.equals("find")) {
+            ui.showMessage(
+                    "Looking for something? 🔍\n"
+                            + "Tell me the keyword and I'll search your tasks.\n"
+                            + "Example: find meeting"
+            );
+            return ui.endCapture();
+        }
+
+        if (command.equals("update")) {
+            ui.showMessage(
+                    "Want to edit a task? ✏️\n"
+                            + "Try: update <task number> <new description>\n"
+                            + "Example: update 2 submit final report"
+            );
             return ui.endCapture();
         }
 
         if (command.equals("mark") || command.equals("unmark") || command.equals("delete")) {
-            ui.showMessage("Please provide a task number.");
+            ui.showMessage(
+                    "I need a task number 🙂\n"
+                            + "Try:\n"
+                            + "mark <task number>\n"
+                            + "unmark <task number>\n"
+                            + "delete <task number>\n"
+                            + "Example: mark 2"
+            );
             return ui.endCapture();
         }
 
         if (command.startsWith("mark ")) {
-            handleMark(ui, storage, command, tasks, count);
+            int idx = parseIndex(command.substring(5)); // after "mark "
+            try {
+                Task t = taskList.mark(idx);
+
+                if (!saveOrShowError(ui, storage, taskList.getInternalArray(), taskList.size())) {
+                    return ui.endCapture();
+                }
+
+                ui.showMessage("Nice! I've marked this task as done:\n  " + t);
+            } catch (IndexOutOfBoundsException e) {
+                ui.showMessage("Invalid task number.");
+            }
             return ui.endCapture();
         }
 
         if (command.startsWith("unmark ")) {
-            handleUnmark(ui, storage, command, tasks, count);
+            int idx = parseIndex(command.substring(7)); // after "unmark "
+            try {
+                Task t = taskList.unmark(idx);
+
+                if (!saveOrShowError(ui, storage, taskList.getInternalArray(), taskList.size())) {
+                    return ui.endCapture();
+                }
+
+                ui.showMessage("OK, I've marked this task as not done yet:\n  " + t);
+            } catch (IndexOutOfBoundsException e) {
+                ui.showMessage("Invalid task number.");
+            }
             return ui.endCapture();
         }
 
         if (command.startsWith("delete ")) {
-            count = handleDelete(ui, storage, command, tasks, count);
+            int idx = parseIndex(command.substring(7)); // after "delete "
+            try {
+                Task removed = taskList.delete(idx);
+
+                if (!saveOrShowError(ui, storage, taskList.getInternalArray(), taskList.size())) {
+                    return ui.endCapture();
+                }
+
+                ui.showMessage(
+                        "Noted. I've removed this task:\n"
+                                + "  " + removed + "\n"
+                                + "Now you have " + taskList.size() + " tasks in the list."
+                );
+            } catch (IndexOutOfBoundsException e) {
+                ui.showMessage("Invalid task number.");
+            }
             return ui.endCapture();
         }
 
         if (command.startsWith("update ")) {
-            count = handleUpdate(ui, storage, input, tasks, count);
+            String rest = input.substring(7).trim(); // after "update "
+
+            if (rest.isEmpty()) {
+                ui.showMessage("Please use: update <task number> <new description>");
+                return ui.endCapture();
+            }
+
+            String[] parts = rest.split("\\s+", 2);
+            if (parts.length < 2) {
+                ui.showMessage("Please use: update <task number> <new description>");
+                return ui.endCapture();
+            }
+
+            int idx = parseIndex(parts[0]);
+            String newDesc = parts[1];
+
+            try {
+                Task t = taskList.update(idx, newDesc);
+
+                if (!saveOrShowError(ui, storage, taskList.getInternalArray(), taskList.size())) {
+                    return ui.endCapture();
+                }
+
+                ui.showMessage("Nice! I've updated this task:\n  " + t);
+            } catch (IndexOutOfBoundsException e) {
+                ui.showMessage("Invalid task number.");
+            } catch (IllegalArgumentException e) {
+                ui.showMessage(e.getMessage());
+            }
+
             return ui.endCapture();
         }
 
-        if (command.startsWith("todo ")) {
-            count = handleTodo(ui, storage, input, tasks, count);
-            return ui.endCapture();
+        if (command.equals("todo") || command.startsWith("todo ")) {
+            return handleTodoCommand(input, command);
         }
 
-        if (command.startsWith("deadline ")) {
-            count = handleDeadline(ui, storage, input, tasks, count);
-            return ui.endCapture();
+        if (command.equals("deadline") || command.startsWith("deadline ")) {
+            return handleDeadlineCommand(input, command);
         }
 
-        if (command.startsWith("event ")) {
-            count = handleEvent(ui, storage, input, tasks, count);
-            return ui.endCapture();
+        if (command.equals("event") || command.startsWith("event ")) {
+            return handleEventCommand(input, command);
         }
 
         if (command.startsWith("find ")) {
-            handleFind(ui, command, tasks, count);
+            String keyword = command.substring(5).trim();
+            try {
+                ui.showMessage(taskList.formatFind(keyword));
+            } catch (IllegalArgumentException e) {
+                ui.showMessage(e.getMessage());
+            }
             return ui.endCapture();
         }
 
         ui.showMessage("OOPS!!! I'm sorry, but I don't know what that means 😔");
+
+        return ui.endCapture();
+    }
+
+    private String handleTodoCommand(String input, String command) {
+        if (command.equals("todo")) {
+            ui.showMessage(
+                    "Want to add something to your task list? 📝\n"
+                            + "Tell me what you need to do.\n"
+                            + "Example: todo finish homework"
+            );
+            return ui.endCapture();
+        }
+
+        String taskDesc = input.substring(5).trim();
+        if (taskDesc.isEmpty()) {
+            ui.showMessage(
+                    "Your todo description can’t be empty 🙂\n"
+                            + "Try: todo finish homework"
+            );
+            return ui.endCapture();
+        }
+
+        try {
+            Task newTask = taskList.add(new Todo(taskDesc));
+            if (!save()) {
+                return ui.endCapture();
+            }
+
+            ui.showMessage(
+                    "Got it! I've added this task:\n"
+                            + "  " + newTask + "\n"
+                            + "Now you have " + taskList.size() + " tasks in the list."
+            );
+        } catch (IllegalStateException e) {
+            ui.showMessage("Task list is full.");
+        }
+
+        return ui.endCapture();
+    }
+
+    private String handleDeadlineCommand(String input, String command) {
+        if (command.equals("deadline")) {
+            ui.showMessage(
+                    "Got a deadline coming up? ⏰\n"
+                            + "Tell me the task and when it's due.\n"
+                            + "Example: deadline submit report /by 2026-03-10 1800"
+            );
+            return ui.endCapture();
+        }
+
+        String lower = input.toLowerCase();
+
+        int byIndex = lower.indexOf(" /by ");
+        boolean hasSlash = true;
+
+        if (byIndex == -1) {
+            byIndex = lower.indexOf(" by ");
+            hasSlash = false;
+        }
+
+        if (byIndex == -1) {
+            ui.showMessage(
+                    "I need a due time for that 🙂\n"
+                            + "Try: deadline <description> /by <YYYY-MM-DD HHmm>\n"
+                            + "Example: deadline submit report /by 2026-03-10 1800"
+            );
+            return ui.endCapture();
+        }
+
+        String taskDesc = input.substring(9, byIndex).trim();
+        String byRaw = input.substring(byIndex + (hasSlash ? 5 : 4)).trim();
+
+        if (taskDesc.isEmpty()) {
+            ui.showMessage(
+                    "Your deadline description can’t be empty 🙂\n"
+                            + "Example: deadline submit report /by 2026-03-10 1800"
+            );
+            return ui.endCapture();
+        }
+
+        if (byRaw.isEmpty()) {
+            ui.showMessage(
+                    "Please tell me *when* it’s due ⏰\n"
+                            + "Example: deadline submit report /by 2026-03-10 1800"
+            );
+            return ui.endCapture();
+        }
+
+        if (taskList.isFull()) {
+            ui.showMessage("Task list is full.");
+            return ui.endCapture();
+        }
+
+        LocalDateTime dt = parseDateOrDateTime(ui, byRaw);
+        if (dt == null) {
+            return ui.endCapture();
+        }
+
+        Task newTask = byRaw.contains(" ")
+                ? new Deadline(taskDesc, dt)
+                : new Deadline(taskDesc, dt.toLocalDate());
+
+        try {
+            taskList.add(newTask);
+            if (!save()) {
+                return ui.endCapture();
+            }
+
+            ui.showMessage(
+                    "Got it! I've added this task:\n"
+                            + "  " + newTask + "\n"
+                            + "Now you have " + taskList.size() + " tasks in the list."
+            );
+        } catch (IllegalStateException e) {
+            ui.showMessage("Task list is full.");
+        }
+
+        return ui.endCapture();
+    }
+
+    private String handleEventCommand(String input, String command) {
+        if (command.equals("event")) {
+            ui.showMessage(
+                    "Planning an event? 📅\n"
+                            + "Tell me when it starts and ends.\n"
+                            + "Example: event team meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
+            );
+            return ui.endCapture();
+        }
+
+        String lower = input.toLowerCase();
+
+        int fromIndex = lower.indexOf(" /from ");
+        boolean fromSlash = true;
+        if (fromIndex == -1) {
+            fromIndex = lower.indexOf(" from ");
+            fromSlash = false;
+        }
+
+        int toIndex = lower.indexOf(" /to ");
+        boolean toSlash = true;
+        if (toIndex == -1) {
+            toIndex = lower.indexOf(" to ");
+            toSlash = false;
+        }
+
+        if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
+            ui.showMessage(
+                    "I need a start and end time 🙂\n"
+                            + "Try: event <description> /from <start> /to <end>\n"
+                            + "Example: event team meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
+            );
+            return ui.endCapture();
+        }
+
+        String taskDesc = input.substring(6, fromIndex).trim();
+        String fromRaw = input.substring(fromIndex + (fromSlash ? 7 : 6), toIndex).trim();
+        String toRaw = input.substring(toIndex + (toSlash ? 5 : 4)).trim();
+
+        if (taskDesc.isEmpty()) {
+            ui.showMessage(
+                    "Your event description can’t be empty 🙂\n"
+                            + "Example: event team meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
+            );
+            return ui.endCapture();
+        }
+
+        if (fromRaw.isEmpty() || toRaw.isEmpty()) {
+            ui.showMessage(
+                    "Please include both start and end times ⏰\n"
+                            + "Example: event team meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
+            );
+            return ui.endCapture();
+        }
+
+        if (taskList.isFull()) {
+            ui.showMessage("Task list is full.");
+            return ui.endCapture();
+        }
+
+        LocalDateTime start = parseDateOrDateTime(ui, fromRaw);
+        if (start == null) {
+            return ui.endCapture();
+        }
+
+        LocalDateTime end = parseDateOrDateTime(ui, toRaw);
+        if (end == null) {
+            return ui.endCapture();
+        }
+
+        if (!end.isAfter(start)) {
+            ui.showMessage(
+                    "Oops — the end time must be after the start time 🙂\n"
+                            + "Example: event team meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
+            );
+            return ui.endCapture();
+        }
+
+        Task newTask;
+        try {
+            newTask = new Event(taskDesc, start, end);
+        } catch (IllegalArgumentException e) {
+            ui.showMessage(
+                    "OOPS! " + e.getMessage() + "\n"
+                            + "Example: event team meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
+            );
+            return ui.endCapture();
+        }
+
+        try {
+            taskList.add(newTask);
+            if (!save()) {
+                return ui.endCapture();
+            }
+
+            ui.showMessage(
+                    "Got it! I've added this task:\n"
+                            + "  " + newTask + "\n"
+                            + "Now you have " + taskList.size() + " tasks in the list."
+            );
+        } catch (IllegalStateException e) {
+            ui.showMessage("Task list is full.");
+        }
 
         return ui.endCapture();
     }
@@ -204,436 +523,8 @@ public class Bit {
         }
     }
 
-    /**
-     * Displays all tasks currently stored in the task list.
-     *
-     * @param ui    User interface used to display messages
-     * @param tasks Array containing all stored tasks
-     * @param count Number of tasks currently in the list
-     */
-    private static void handleList(Ui ui, Task[] tasks, int count) {
-
-        if (count == 0) {
-            ui.showMessage("Your task list is empty.");
-            return;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("Here are the tasks in your list:\n");
-
-        for (int i = 0; i < count; i++) {
-            sb.append(String.format("%2d) %s%n", i + 1, tasks[i]));
-        }
-
-        ui.showMessage(sb.toString().trim());
-    }
-
-    /**
-     * Marks the specified task as done.
-     *
-     * @param ui      User interface used to display messages
-     * @param storage Storage used to persist updated tasks
-     * @param command Full user command containing the task index (e.g. "mark 2")
-     * @param tasks   Array containing all stored tasks
-     * @param count   Number of tasks currently in the list
-     */
-    private static void handleMark(Ui ui, Storage storage, String command, Task[] tasks, int count) {
-        int idx = parseIndex(command.substring(5)); // after "mark "
-
-        if (idx < 1 || idx > count) {
-            ui.showMessage("Invalid task number.");
-            return;
-        }
-
-        Task task = tasks[idx - 1];
-        task.markDone();
-
-        if (!saveOrShowError(ui, storage, tasks, count)) {
-            return;
-        }
-
-        ui.showMessage(
-                "Nice! I've marked this task as done:\n"
-                        + "  " + task
-        );
-    }
-
-    /**
-     * Marks the specified task as not done.
-     *
-     * @param ui      User interface used to display messages
-     * @param storage Storage used to persist updated tasks
-     * @param command Full user command containing the task index (e.g. "unmark 2")
-     * @param tasks   Array containing all stored tasks
-     * @param count   Number of tasks currently in the list
-     */
-    private static void handleUnmark(Ui ui, Storage storage, String command, Task[] tasks, int count) {
-        int idx = parseIndex(command.substring(7)); // after "unmark "
-
-        if (idx < 1 || idx > count) {
-            ui.showMessage("Invalid task number.");
-            return;
-        }
-
-        Task task = tasks[idx - 1];
-        task.markUndone();
-
-        if (!saveOrShowError(ui, storage, tasks, count)) {
-            return;
-        }
-
-        ui.showMessage(
-                "OK, I've marked this task as not done yet:\n"
-                        + "  " + task
-        );
-    }
-
-    /**
-     * Deletes the specified task from the task list and shifts remaining tasks.
-     *
-     * @param ui      User interface used to display messages
-     * @param storage Storage used to persist updated tasks
-     * @param command Full user command containing the task index (e.g. "delete 3")
-     * @param tasks   Array containing all stored tasks
-     * @param count   Number of tasks currently in the list
-     * @return Updated number of tasks after deletion
-     */
-    private static int handleDelete(Ui ui, Storage storage, String command, Task[] tasks, int count) {
-        int idx = parseIndex(command.substring(7)); // after "delete "
-
-        if (idx < 1 || idx > count) {
-            ui.showMessage("Invalid task number.");
-            return count;
-        }
-
-        int removeIndex = idx - 1;
-        Task removed = tasks[removeIndex];
-
-        for (int i = removeIndex; i < count - 1; i++) {
-            tasks[i] = tasks[i + 1];
-        }
-
-        tasks[count - 1] = null;
-        count--;
-
-        if (!saveOrShowError(ui, storage, tasks, count)) {
-            return count;
-        }
-
-        ui.showMessage(
-                "Noted. I've removed this task:\n"
-                        + "  " + removed + "\n"
-                        + "Now you have " + count + " tasks in the list."
-        );
-
-        return count;
-    }
-
-    /**
-     * Updates the description of an existing task.
-     *
-     * The command format is:
-     * update <task number> <new description>
-     *
-     * Example:
-     * update 2 submit final report
-     *
-     * @param ui User interface used to display messages
-     * @param storage Storage used to persist updated tasks
-     * @param input Full user input containing the update command
-     * @param tasks Array containing all stored tasks
-     * @param count Number of tasks currently in the list
-     * @return Updated number of tasks (unchanged unless saving fails)
-     */
-    private static int handleUpdate(Ui ui, Storage storage, String input, Task[] tasks, int count) {
-        String rest = input.substring(7).trim(); // after "update "
-
-        if (rest.isEmpty()) {
-            ui.showMessage("Please use: update <task number> <new description>");
-            return count;
-        }
-
-        String[] parts = rest.split("\\s+", 2);
-
-        if (parts.length < 2) {
-            ui.showMessage("Please use: update <task number> <new description>");
-            return count;
-        }
-
-        int idx = parseIndex(parts[0]);
-        String newDesc = parts[1].trim();
-
-        if (idx < 1 || idx > count) {
-            ui.showMessage("Invalid task number.");
-            return count;
-        }
-
-        if (newDesc.isEmpty()) {
-            ui.showMessage("New description cannot be empty.");
-            return count;
-        }
-
-        Task task = tasks[idx - 1];
-        task.setDescription(newDesc);
-
-        if (!saveOrShowError(ui, storage, tasks, count)) {
-            return count;
-        }
-
-        ui.showMessage(
-                "Nice! I've updated this task:\n"
-                        + "  " + task
-        );
-
-        return count;
-    }
-
-    /**
-     * Adds a new todo task to the task list.
-     *
-     * @param ui      User interface used to display messages
-     * @param storage Storage used to persist updated tasks
-     * @param input   Full user input containing the todo description
-     * @param tasks   Array containing all stored tasks
-     * @param count   Number of tasks currently in the list
-     * @return Updated number of tasks after adding the todo
-     */
-    private static int handleTodo(Ui ui, Storage storage, String input, Task[] tasks, int count) {
-        String taskDesc = input.substring(5).trim(); // after "todo "
-
-        if (taskDesc.isEmpty()) {
-            ui.showMessage("The description of a todo cannot be empty.");
-            return count;
-        }
-
-        if (count >= MAX_TASKS) {
-            ui.showMessage("Task list is full.");
-            return count;
-        }
-
-        Task newTask = new Todo(taskDesc);
-        tasks[count] = newTask;
-        count++;
-
-        if (!saveOrShowError(ui, storage, tasks, count)) {
-            return count;
-        }
-
-        ui.showMessage(
-                "Got it! I've added this task:\n"
-                        + "  " + newTask + "\n"
-                        + "Now you have " + count + " tasks in the list."
-        );
-
-        return count;
-    }
-
-    /**
-     * Adds a deadline task with a due date.
-     *
-     * @param ui      User interface used to display messages
-     * @param storage Storage used to persist updated tasks
-     * @param input   Full user input containing description and /by time
-     * @param tasks   Array containing all stored tasks
-     * @param count   Number of tasks currently in the list
-     * @return Updated number of tasks after adding the deadline
-     */
-    private static int handleDeadline(Ui ui, Storage storage, String input, Task[] tasks, int count) {
-        String lower = input.toLowerCase();
-
-        int byIndex = lower.indexOf(" /by ");
-        boolean hasSlash = true;
-
-        if (byIndex == -1) {
-            byIndex = lower.indexOf(" by ");
-            hasSlash = false;
-        }
-
-        if (byIndex == -1) {
-            ui.showMessage("Please use: deadline <description> /by <time>");
-            return count;
-        }
-
-        String taskDesc = input.substring(9, byIndex).trim(); // after "deadline "
-        String byRaw = input.substring(byIndex + (hasSlash ? 5 : 4)).trim(); // after " /by " or " by "
-
-        if (taskDesc.isEmpty()) {
-            ui.showMessage("The description of a deadline cannot be empty.");
-            return count;
-        }
-
-        if (byRaw.isEmpty()) {
-            ui.showMessage("The /by time cannot be empty.");
-            return count;
-        }
-
-        if (count >= MAX_TASKS) {
-            ui.showMessage("Task list is full.");
-            return count;
-        }
-
-        LocalDateTime dt = parseDateOrDateTime(ui, byRaw);
-        if (dt == null) {
-            return count;
-        }
-
-        // Preserve whether user gave date-only or date+time (so storage/toString can keep it nice)
-        Task newTask;
-        if (byRaw.contains(" ")) {
-            newTask = new Deadline(taskDesc, dt);
-        } else {
-            newTask = new Deadline(taskDesc, dt.toLocalDate());
-        }
-
-        tasks[count] = newTask;
-        count++;
-
-        if (!saveOrShowError(ui, storage, tasks, count)) {
-            return count;
-        }
-
-        ui.showMessage(
-                "Got it! I've added this task:\n"
-                        + "  " + newTask + "\n"
-                        + "Now you have " + count + " tasks in the list."
-        );
-
-        return count;
-    }
-
-    /**
-     * Adds an event task with start and end times.
-     *
-     * @param ui      User interface used to display messages
-     * @param storage Storage used to persist updated tasks
-     * @param input   Full user input containing description, /from and /to times
-     * @param tasks   Array containing all stored tasks
-     * @param count   Number of tasks currently in the list
-     * @return Updated number of tasks after adding the event
-     */
-    private static int handleEvent(Ui ui, Storage storage, String input, Task[] tasks, int count) {
-        String lower = input.toLowerCase();
-
-        // accept both "/from" and "from"
-        int fromIndex = lower.indexOf(" /from ");
-        boolean fromSlash = true;
-        if (fromIndex == -1) {
-            fromIndex = lower.indexOf(" from ");
-            fromSlash = false;
-        }
-
-        // accept both "/to" and "to"
-        int toIndex = lower.indexOf(" /to ");
-        boolean toSlash = true;
-        if (toIndex == -1) {
-            toIndex = lower.indexOf(" to ");
-            toSlash = false;
-        }
-
-        if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
-            ui.showMessage("Please use: event <description> /from <start> /to <end>");
-            return count;
-        }
-
-        String taskDesc = input.substring(6, fromIndex).trim(); // after "event "
-        String fromRaw = input.substring(fromIndex + (fromSlash ? 7 : 6), toIndex).trim(); // after " /from " or " from "
-        String toRaw = input.substring(toIndex + (toSlash ? 5 : 4)).trim(); // after " /to " or " to "
-
-        if (taskDesc.isEmpty()) {
-            ui.showMessage("The description of an event cannot be empty.");
-            return count;
-        }
-
-        if (fromRaw.isEmpty() || toRaw.isEmpty()) {
-            ui.showMessage("The /from and /to times cannot be empty.");
-            return count;
-        }
-
-        if (count >= MAX_TASKS) {
-            ui.showMessage("Task list is full.");
-            return count;
-        }
-
-        LocalDateTime start = parseDateOrDateTime(ui, fromRaw);
-        if (start == null) {
-            return count;
-        }
-
-        LocalDateTime end = parseDateOrDateTime(ui, toRaw);
-        if (end == null) {
-            return count;
-        }
-
-        if (!end.isAfter(start)) {
-            ui.showMessage(
-                    "OOPS! The end time must be after the start time.\n"
-                            + "Example: event meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
-            );
-            return count;
-        }
-
-        Task newTask;
-        try {
-            newTask = new Event(taskDesc, start, end);
-        } catch (IllegalArgumentException e) {
-            //if Event constructor rejects anything, don't crash the app
-            ui.showMessage(
-                    "OOPS! " + e.getMessage() + "\n"
-                            + "Example: event meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
-            );
-            return count;
-        }
-
-        tasks[count] = newTask;
-        count++;
-
-        if (!saveOrShowError(ui, storage, tasks, count)) {
-            return count;
-        }
-
-        ui.showMessage(
-                "Got it! I've added this task:\n"
-                        + "  " + newTask + "\n"
-                        + "Now you have " + count + " tasks in the list."
-        );
-
-        return count;
-    }
-
-    /**
-     * Finds and displays tasks whose description contains the given keyword.
-     * The search is case-insensitive.
-     *
-     * @param ui      User interface used to display messages
-     * @param command Full user command containing the search keyword (e.g. "find book")
-     * @param tasks   Array containing all stored tasks
-     * @param count   Number of tasks currently in the list
-     */
-    private static void handleFind(Ui ui, String command, Task[] tasks, int count) {
-        String keyword = command.substring(5).trim();
-
-        if (keyword.isEmpty()) {
-            ui.showMessage("Please provide a keyword to search.");
-            return;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("Here are the matching tasks in your list:\n");
-
-        int matchCount = 0;
-        for (int i = 0; i < count; i++) {
-            if (tasks[i].containsKeyword(keyword)) {
-                matchCount++;
-                sb.append(String.format("%2d) %s%n", i + 1, tasks[i]));
-            }
-        }
-
-        if (matchCount == 0) {
-            ui.showMessage("No matching tasks found.");
-            return;
-        }
-
-        ui.showMessage(sb.toString().trim());
+    private boolean save() {
+        return saveOrShowError(ui, storage, taskList.getInternalArray(), taskList.size());
     }
 
 }

@@ -39,7 +39,7 @@ Prerequisites: **JDK 17** and the latest version of **IntelliJ IDEA**.
 4. Configure the project to use **JDK 17**
 5. Locate the file:
 
-`src/main/java/bit/ui/Launcher.java`
+`src/main/java/bit/gui/Launcher.java`
 
 6. Right-click the file and select:
 
