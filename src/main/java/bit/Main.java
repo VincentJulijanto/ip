@@ -23,18 +23,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 /**
  * JavaFX GUI for the Bit chatbot.
@@ -61,8 +52,7 @@ public class Main extends Application {
     /** Keep only the last N days of history. */
     private static final int RETENTION_DAYS = 7;
 
-    /** Log line separator token. */
-    private static final String SEP = "|";
+    private final ChatLog chatLog = new ChatLog(CHAT_LOG_PATH, RETENTION_DAYS);
 
     // ===== UX timing =====
     /** Simulated typing delay to make the bot feel more natural. */
@@ -302,7 +292,7 @@ public class Main extends Application {
             }
 
             if (trimmed.equalsIgnoreCase("bye")) {
-                appendToChatLog("SESSION_END", "BYE");
+                chatLog.append(ChatLog.TYPE_SESSION_END, "BYE");
                 PauseTransition exitDelay = new PauseTransition(EXIT_DELAY);
                 exitDelay.setOnFinished(e2 -> Platform.exit());
                 exitDelay.play();
@@ -343,7 +333,7 @@ public class Main extends Application {
      * @param label chip label
      */
     private void addNewDateChip(String label) {
-        appendToChatLog("DATE", label);
+        chatLog.append(ChatLog.TYPE_DATE, label);
 
         HBox chipRow = buildDateChipRow(label);
         messageBox.getChildren().add(chipRow);
@@ -399,7 +389,7 @@ public class Main extends Application {
      * @param text message content
      */
     private void addUserMessage(String text) {
-        appendToChatLog("ME", text);
+        chatLog.append(ChatLog.TYPE_ME, text);
         appendMessage(buildMessageRow(text, true));
     }
 
@@ -409,7 +399,7 @@ public class Main extends Application {
      * @param text message content
      */
     private void addBotMessage(String text) {
-        appendToChatLog("BIT", text);
+        chatLog.append(ChatLog.TYPE_BIT, text);
         appendMessage(buildMessageRow(text, false));
     }
 
@@ -641,128 +631,29 @@ public class Main extends Application {
     }
 
     /**
-     * Appends a timestamped record to the chat log.
-     * Format: ISO_INSTANT|TYPE|payload
-     *
-     * @param type record type (DATE / ME / BIT / SESSION_END)
-     * @param payload record data
-     */
-    private void appendToChatLog(String type, String payload) {
-        try {
-            Path p = Paths.get(CHAT_LOG_PATH);
-            Files.createDirectories(p.getParent());
-
-            String safePayload = payload == null ? "" : payload.replace("\n", "\\n");
-            String line = Instant.now().toString() + SEP + type + SEP + safePayload + System.lineSeparator();
-
-            Files.writeString(
-                    p,
-                    line,
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.APPEND
-            );
-        } catch (IOException ignored) {
-            // Non-fatal: GUI still works even if logging fails.
-        }
-    }
-
-    /**
      * Loads chat history from disk and reconstructs the UI using only the last 7 days.
      * Also prunes the file so it does not grow forever.
      */
     private void loadChatLogIfAny() {
-        try {
-            Path p = Paths.get(CHAT_LOG_PATH);
-            if (!Files.exists(p)) {
-                return;
+        LocalDate lastChipDate = null;
+
+        for (ChatLog.Record r : chatLog.loadRecentAndPrune()) {
+            if (ChatLog.TYPE_DATE.equals(r.type)) {
+                LocalDate chipDay = ChatLog.toLocalDate(r.ts);
+                String label = ChatLog.normalizeChipLabel(r.payload, chipDay, CHIP_DATE_FMT);
+
+                messageBox.getChildren().add(buildDateChipRow(label));
+                lastChipDate = chipDay;
+
+            } else if (ChatLog.TYPE_ME.equals(r.type)) {
+                messageBox.getChildren().add(buildMessageRow(r.payload, true));
+
+            } else if (ChatLog.TYPE_BIT.equals(r.type)) {
+                messageBox.getChildren().add(buildMessageRow(r.payload, false));
             }
-
-            List<String> lines = Files.readAllLines(p, StandardCharsets.UTF_8);
-            StringBuilder kept = new StringBuilder();
-
-            LocalDate lastChipDate = null;
-
-            for (String raw : lines) {
-                if (raw == null || raw.isBlank()) {
-                    continue;
-                }
-
-                // Expected: ts|TYPE|payload
-                String[] parts = raw.split("\\|", 3);
-                if (parts.length < 3) {
-                    continue; // skip corrupted/legacy
-                }
-
-                Instant ts;
-                try {
-                    ts = Instant.parse(parts[0]);
-                } catch (Exception ex) {
-                    continue;
-                }
-
-                if (!withinRetention(ts)) {
-                    continue;
-                }
-
-                String type = parts[1];
-                String payload = parts[2].replace("\\n", "\n");
-
-                kept.append(raw).append(System.lineSeparator());
-
-                if ("DATE".equals(type)) {
-                    LocalDate chipDay = toLocalDate(ts);
-
-                    String label = payload;
-                    if ("Today".equals(label) && !chipDay.equals(LocalDate.now())) {
-                        label = chipDay.format(CHIP_DATE_FMT);
-                    }
-
-                    messageBox.getChildren().add(buildDateChipRow(label));
-                    lastChipDate = chipDay;
-
-                } else if ("ME".equals(type)) {
-                    messageBox.getChildren().add(buildMessageRow(payload, true));
-
-                } else if ("BIT".equals(type)) {
-                    messageBox.getChildren().add(buildMessageRow(payload, false));
-                }
-            }
-
-            Files.writeString(
-                    p,
-                    kept.toString(),
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING
-            );
-
-            lastDateShown = lastChipDate;
-
-        } catch (IOException ignored) {
-            // Non-fatal
         }
-    }
 
-    /**
-     * Returns true if ts is within the last {@link #RETENTION_DAYS} days.
-     *
-     * @param ts timestamp
-     * @return whether to keep
-     */
-    private boolean withinRetention(Instant ts) {
-        Instant cutoff = Instant.now().minus(java.time.Duration.ofDays(RETENTION_DAYS));
-        return !ts.isBefore(cutoff);
-    }
-
-    /**
-     * Converts an instant to local date in system timezone.
-     *
-     * @param ts timestamp
-     * @return local date
-     */
-    private LocalDate toLocalDate(Instant ts) {
-        return ts.atZone(ZoneId.systemDefault()).toLocalDate();
+        lastDateShown = lastChipDate;
     }
 
     /**

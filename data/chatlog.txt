@@ -97,3 +97,63 @@
 2026-03-02T06:14:57.736317Z|BIT|Nice! I've updated this task:\n  [T][ ] bo
 2026-03-02T06:15:00.399415Z|ME|find bo
 2026-03-02T06:15:00.822497Z|BIT|Here are the matching tasks in your list:\n1. [T][ ] read book chapter 2\n2. [T][ ] return 2 book\n3. [D][ ] read book (by: Dec 02 2029)\n4. [D][ ] return book (by: Dec 19 2023)\n5. [T][ ] bo
+2026-03-02T06:38:49.634638Z|ME|hello
+2026-03-02T06:38:50.062595Z|BIT|OOPS!!! I'm sorry, but I don't know what that means 😔
+2026-03-02T06:38:53.617097Z|ME|list
+2026-03-02T06:38:54.046882Z|BIT|Here are the tasks in your list:\n 1) [T][ ] read book chapter 2\n 2) [T][ ] hi\n 3) [T][ ] return 2 book\n 4) [D][ ] read book (by: Dec 02 2029)\n 5) [D][ ] eat lunch (by: Oct 19 2023)\n 6) [D][ ] return book (by: Dec 19 2023)\n 7) [D][ ] eat bread (by: Dec 30 2029)\n 8) [T][ ] help me\n 9) [T][ ] bo\n10) [D][ ] submit report (by: Mar 01 2026, 11:59PM)
+2026-03-02T06:38:56.809252Z|ME|mark 1
+2026-03-02T06:38:57.238229Z|BIT|Nice! I've marked this task as done:\n  [T][X] read book chapter 2
+2026-03-02T06:38:58.553885Z|ME|list
+2026-03-02T06:38:58.979521Z|BIT|Here are the tasks in your list:\n 1) [T][X] read book chapter 2\n 2) [T][ ] hi\n 3) [T][ ] return 2 book\n 4) [D][ ] read book (by: Dec 02 2029)\n 5) [D][ ] eat lunch (by: Oct 19 2023)\n 6) [D][ ] return book (by: Dec 19 2023)\n 7) [D][ ] eat bread (by: Dec 30 2029)\n 8) [T][ ] help me\n 9) [T][ ] bo\n10) [D][ ] submit report (by: Mar 01 2026, 11:59PM)
+2026-03-02T06:39:01.801609Z|ME|unmark 1
+2026-03-02T06:39:02.229675Z|BIT|OK, I've marked this task as not done yet:\n  [T][ ] read book chapter 2
+2026-03-02T06:39:05.067894Z|ME|delete 1
+2026-03-02T06:39:05.496379Z|BIT|Noted. I've removed this task:\n  [T][ ] read book chapter 2\nNow you have 9 tasks in the list.
+2026-03-02T06:39:10.036755Z|ME|delete 2
+2026-03-02T06:39:10.462111Z|BIT|Noted. I've removed this task:\n  [T][ ] return 2 book\nNow you have 8 tasks in the list.
+2026-03-02T06:39:27.590977Z|ME|delete 3
+2026-03-02T06:39:28.017014Z|BIT|Noted. I've removed this task:\n  [D][ ] eat lunch (by: Oct 19 2023)\nNow you have 7 tasks in the list.
+2026-03-02T06:39:31.690994Z|ME|find boo
+2026-03-02T06:39:32.116948Z|BIT|Here are the matching tasks in your list:\n 2) [D][ ] read book (by: Dec 02 2029)\n 3) [D][ ] return book (by: Dec 19 2023)
+2026-03-02T06:39:37.997884Z|ME|delete 2
+2026-03-02T06:39:38.425509Z|BIT|Noted. I've removed this task:\n  [D][ ] read book (by: Dec 02 2029)\nNow you have 6 tasks in the list.
+2026-03-02T06:39:44.222588Z|ME|delete 3
+2026-03-02T06:39:44.650521Z|BIT|Noted. I've removed this task:\n  [D][ ] eat bread (by: Dec 30 2029)\nNow you have 5 tasks in the list.
+2026-03-02T06:39:46.097363Z|ME|delete 4
+2026-03-02T06:39:46.525500Z|BIT|Noted. I've removed this task:\n  [T][ ] bo\nNow you have 4 tasks in the list.
+2026-03-02T06:39:48.047268Z|ME|delete 5
+2026-03-02T06:39:48.475177Z|BIT|Invalid task number.
+2026-03-02T06:39:52.041174Z|ME|delete 6
+2026-03-02T06:39:52.466811Z|BIT|Invalid task number.
+2026-03-02T06:39:56.422653Z|ME|list
+2026-03-02T06:39:56.850325Z|BIT|Here are the tasks in your list:\n 1) [T][ ] hi\n 2) [D][ ] return book (by: Dec 19 2023)\n 3) [T][ ] help me\n 4) [D][ ] submit report (by: Mar 01 2026, 11:59PM)
+2026-03-02T06:39:59.739066Z|ME|delete 1
+2026-03-02T06:40:00.167939Z|BIT|Noted. I've removed this task:\n  [T][ ] hi\nNow you have 3 tasks in the list.
+2026-03-02T06:40:01.806995Z|ME|delete 2
+2026-03-02T06:40:02.235186Z|BIT|Noted. I've removed this task:\n  [T][ ] help me\nNow you have 2 tasks in the list.
+2026-03-02T06:40:03.856920Z|ME|delete 3
+2026-03-02T06:40:04.285378Z|BIT|Invalid task number.
+2026-03-02T06:40:06.715921Z|ME|delete 1
+2026-03-02T06:40:07.144623Z|BIT|Noted. I've removed this task:\n  [D][ ] return book (by: Dec 19 2023)\nNow you have 1 tasks in the list.
+2026-03-02T06:40:09.209425Z|ME|delete2
+2026-03-02T06:40:09.636445Z|BIT|OOPS!!! I'm sorry, but I don't know what that means 😔
+2026-03-02T06:40:13.319690Z|ME|delete 2
+2026-03-02T06:40:13.745389Z|BIT|Invalid task number.
+2026-03-02T06:40:16.875863Z|ME|delete 1
+2026-03-02T06:40:17.304333Z|BIT|Noted. I've removed this task:\n  [D][ ] submit report (by: Mar 01 2026, 11:59PM)\nNow you have 0 tasks in the list.
+2026-03-02T06:40:42.927302Z|ME|todo hello
+2026-03-02T06:40:43.355794Z|BIT|Got it! I've added this task:\n  [T][ ] hello\nNow you have 1 tasks in the list.
+2026-03-02T06:40:46.569155Z|ME|mark 1
+2026-03-02T06:40:46.997514Z|BIT|Nice! I've marked this task as done:\n  [T][X] hello
+2026-03-02T06:40:50.153148Z|ME|bye
+2026-03-02T06:40:50.580635Z|BIT|Bye. Hope to see you again soon!
+2026-03-02T06:40:50.581065Z|SESSION_END|BYE
+2026-03-02T06:40:58.661842Z|ME|list
+2026-03-02T06:40:59.089627Z|BIT|Here are the tasks in your list:\n 1) [T][X] hello
+2026-03-02T06:41:08.995075Z|ME|todo read book
+2026-03-02T06:41:09.423165Z|BIT|Got it! I've added this task:\n  [T][ ] read book\nNow you have 2 tasks in the list.
+2026-03-02T06:41:14.511106Z|ME|bye
+2026-03-02T06:41:14.939190Z|BIT|Bye. Hope to see you again soon!
+2026-03-02T06:41:14.939835Z|SESSION_END|BYE
+2026-03-02T06:41:22.843516Z|ME|list
+2026-03-02T06:41:23.271641Z|BIT|Here are the tasks in your list:\n 1) [T][X] hello\n 2) [T][ ] read book
