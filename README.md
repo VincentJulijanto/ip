@@ -80,15 +80,31 @@ src
      └─ java
          └─ bit
              ├─ task
-             │   ├─ Task
-             │   ├─ Todo
-             │   ├─ Deadline
-             │   └─ Event
-             ├─ Storage
-             ├─ CliUi
-             ├─ Bit
-             ├─ Main
-             └─ bit.gui.Launcher
+             │   ├─ Task.java
+             │   ├─ Todo.java
+             │   ├─ Deadline.java
+             │   └─ Event.java
+             │
+             ├─ storage
+             │   ├─ Storage.java
+             │   └─ ChatLog.java
+             │
+             ├─ cli
+             │   └─ Ui.java
+             │
+             ├─ gui
+             │   ├─ Main.java
+             │   ├─ Launcher.java
+             │   │
+             │   ├─ controller
+             │   │   └─ ChatController.java
+             │   │
+             │   └─ view
+             │       ├─ ChatView.java
+             │       ├─ ChatBubbleFactory.java
+             │       └─ ChatStyles.java
+             │
+             └─ Bit.java
 ```
 
 ---
