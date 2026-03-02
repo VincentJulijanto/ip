@@ -81,6 +81,11 @@ public class Main extends Application {
     /** Max bubble width as a fraction of the visible chat viewport width. */
     private static final double BUBBLE_WIDTH_RATIO = 0.72;
 
+    // ===== Responsive side gutter =====
+    private static final double MIN_SIDE_GUTTER = 12;   // px
+    private static final double MAX_SIDE_GUTTER = 72;   // px
+    private static final double SIDE_GUTTER_RATIO = 0.12;
+
     // ===== Date/Time formatting =====
     /** Timestamp under each bubble. */
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
@@ -117,6 +122,9 @@ public class Main extends Application {
 
     // ===== Reusable nodes =====
     private final HBox typingIndicator = buildTypingIndicator();
+
+    // Used to track the real chat viewport width (for responsive bubbles)
+    private final Region viewportWidthProbe = new Region();
 
     // ===== Date chip tracking =====
     /** Last date for which a chip was inserted (based on runtime tracking). */
@@ -193,7 +201,7 @@ public class Main extends Application {
      * the expandable spacer sits above messageBox and pushes content downward.
      */
     private void configureChatArea() {
-        messageBox.setPadding(new Insets(14, 16, 14, 16));
+        messageBox.setPadding(new Insets(14, 0, 14, 22));
         messageBox.setStyle("-fx-background-color: transparent;");
 
         VBox.setVgrow(topSpacer, Priority.ALWAYS);
@@ -202,6 +210,12 @@ public class Main extends Application {
         chatContent.setStyle("-fx-background-color: " + BG + ";");
 
         scrollPane.setContent(chatContent);
+
+        viewportWidthProbe.minWidthProperty().bind(Bindings.createDoubleBinding(
+                () -> scrollPane.getViewportBounds().getWidth(),
+                scrollPane.viewportBoundsProperty()
+        ));
+
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
@@ -432,12 +446,11 @@ public class Main extends Application {
         Text name = new Text(isUser ? "Me" : "Bit");
         name.setStyle("-fx-fill: " + MUTED + "; -fx-font-size: 11px; -fx-font-weight: 700;");
 
-        // Label keeps short bubbles compact (unlike Text which often stretches).
         Label msg = new Label(text);
         msg.setWrapText(true);
-        msg.maxWidthProperty().bind(scrollPane.widthProperty().multiply(BUBBLE_WIDTH_RATIO));
+        msg.maxWidthProperty().bind(viewportWidthProbe.minWidthProperty().multiply(BUBBLE_WIDTH_RATIO));
         msg.setStyle("-fx-text-fill: " + (isUser ? "white" : TEXT) + "; -fx-font-size: 13px;");
-        msg.setMinWidth(Region.USE_PREF_SIZE);
+        msg.setMinWidth(0);
 
         String time = LocalDateTime.now().format(TIME_FMT);
         Text ts = new Text(time);
@@ -447,6 +460,7 @@ public class Main extends Application {
         );
 
         VBox bubble = new VBox(6, msg, ts);
+        bubble.maxWidthProperty().bind(viewportWidthProbe.minWidthProperty().multiply(BUBBLE_WIDTH_RATIO));
         bubble.setPadding(new Insets(12, 14, 12, 14));
         bubble.setStyle(
                 "-fx-background-radius: 22;" +
@@ -455,15 +469,38 @@ public class Main extends Application {
                         "-fx-border-radius: 22;" +
                         "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 16, 0.2, 0, 4);"
         );
-        bubble.setMaxWidth(Region.USE_PREF_SIZE);
 
         VBox stack = new VBox(4, name, bubble);
-        stack.setPadding(new Insets(2, 6, 2, 6));
-        stack.setAlignment(isUser ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        stack.setAlignment(isUser ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
 
-        HBox row = new HBox(stack);
+        // responsive side gutter (updates when window resizes)
+        Runnable applyResponsivePadding = () -> {
+            double g = currentSideGutter();
+            if (isUser) {
+                stack.setPadding(new Insets(2, 2, 2, g));     // leave gutter on LEFT for user
+            } else {
+                stack.setPadding(new Insets(2, g, 2, 2));     // leave gutter on RIGHT for bot
+            }
+        };
+        applyResponsivePadding.run();
+
+        // Keep it responsive for future resizes
+        scrollPane.viewportBoundsProperty().addListener((obs, oldV, newV) -> applyResponsivePadding.run());
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox row = new HBox(8);
+        if (isUser) {
+            row.getChildren().addAll(spacer, stack); // push to right
+        } else {
+            row.getChildren().addAll(stack, spacer); // push to left
+        }
+
+        row.prefWidthProperty().bind(viewportWidthProbe.minWidthProperty());
+        row.setMaxWidth(Double.MAX_VALUE);
         row.setPadding(new Insets(2, 0, 2, 0));
-        row.setStyle(isUser ? "-fx-alignment: CENTER_RIGHT;" : "-fx-alignment: CENTER_LEFT;");
+
         return row;
     }
 
@@ -531,6 +568,15 @@ public class Main extends Application {
      */
     private void scrollToBottom() {
         Platform.runLater(() -> scrollPane.setVvalue(1.0));
+    }
+
+    private double clamp(double v, double lo, double hi) {
+        return Math.max(lo, Math.min(hi, v));
+    }
+
+    private double currentSideGutter() {
+        double w = scrollPane.getViewportBounds().getWidth();
+        return clamp(w * SIDE_GUTTER_RATIO, MIN_SIDE_GUTTER, MAX_SIDE_GUTTER);
     }
 
     /**
