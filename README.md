@@ -80,9 +80,10 @@ src
      └─ java
          └─ bit
              ├─ task
-             │   ├─ Task.java
+             │   ├─Task.java
+             │   ├─ TaskList.java
              │   ├─ Todo.java
-             │   ├─ Deadline.java
+             │   ├─ Deadline.java 
              │   └─ Event.java
              │
              ├─ storage
