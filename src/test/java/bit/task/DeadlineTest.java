@@ -1,9 +1,12 @@
 package bit.task;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DeadlineTest {
@@ -44,5 +47,28 @@ public class DeadlineTest {
         d.markDone();
 
         assertTrue(d.isDone());
+    }
+
+    @Test
+    public void constructor_dateOnlyDeadline_formatsDateWithoutTime() {
+        LocalDate date = LocalDate.of(2029, 12, 30);
+        Deadline d = new Deadline("submit report", date);
+
+        String output = d.toString();
+
+        assertTrue(output.contains("Dec 30 2029"));
+        assertFalse(output.contains("AM"));
+        assertFalse(output.contains("PM"));
+    }
+
+    @Test
+    public void markUndone_deadlineMarkedUndone() {
+        LocalDateTime deadlineTime = LocalDateTime.of(2029, 12, 30, 14, 0);
+        Deadline d = new Deadline("submit report", deadlineTime);
+
+        d.markDone();
+        d.markUndone();
+
+        assertFalse(d.isDone());
     }
 }
