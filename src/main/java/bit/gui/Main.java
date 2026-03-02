@@ -1,5 +1,8 @@
-package bit;
+package bit.gui;
 
+import bit.Bit;
+import bit.cli.Ui;
+import bit.storage.ChatLog;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.TranslateTransition;

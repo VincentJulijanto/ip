@@ -1,5 +1,6 @@
 package bit;
 
+import bit.storage.Storage;
 import bit.task.Task;
 import bit.task.Todo;
 

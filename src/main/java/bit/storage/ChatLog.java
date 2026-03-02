@@ -1,4 +1,4 @@
-package bit;
+package bit.storage;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

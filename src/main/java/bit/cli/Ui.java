@@ -1,4 +1,4 @@
-package bit;
+package bit.cli;
 
 import java.util.Scanner;
 

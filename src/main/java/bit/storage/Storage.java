@@ -1,4 +1,4 @@
-package bit;
+package bit.storage;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import bit.Bit;
 import bit.task.Deadline;
 import bit.task.Event;
 import bit.task.Task;

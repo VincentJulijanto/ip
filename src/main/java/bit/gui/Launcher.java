@@ -1,4 +1,4 @@
-package bit;
+package bit.gui;
 
 import javafx.application.Application;
 
