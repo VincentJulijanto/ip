@@ -55,7 +55,6 @@ shadowJar {
         attributes "Main-Class": "bit.Launcher"
     }
 
-    // IMPORTANT: force packaging of runtimeClasspath (includes the OS-specific JavaFX natives)
     configurations = [project.configurations.runtimeClasspath]
 }
 

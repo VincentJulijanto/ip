@@ -561,7 +561,26 @@ public class Bit {
             return count;
         }
 
-        Task newTask = new Event(taskDesc, start, end);
+        if (!end.isAfter(start)) {
+            ui.showMessage(
+                    "OOPS! The end time must be after the start time.\n"
+                            + "Example: event meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
+            );
+            return count;
+        }
+
+        Task newTask;
+        try {
+            newTask = new Event(taskDesc, start, end);
+        } catch (IllegalArgumentException e) {
+            //if Event constructor rejects anything, don't crash the app
+            ui.showMessage(
+                    "OOPS! " + e.getMessage() + "\n"
+                            + "Example: event meeting /from 2026-03-10 1800 /to 2026-03-10 1900"
+            );
+            return count;
+        }
+
         tasks[count] = newTask;
         count++;
 
@@ -569,13 +588,11 @@ public class Bit {
             return count;
         }
 
-
         ui.showMessage(
                 "Got it! I've added this task:\n"
                         + "  " + newTask + "\n"
                         + "Now you have " + count + " tasks in the list."
         );
-        
 
         return count;
     }

@@ -35,9 +35,20 @@ public class Event extends Task {
     public Event(String description, LocalDateTime from, LocalDateTime to) {
         super(description);
 
-        assert from != null : "Event start time (from) must not be null";
-        assert to != null : "Event end time (to) must not be null";
-        assert !to.isBefore(from) : "Event end time (to) must not be before start time (from)";
+        assert from != null : "Event start time cannot be null";
+        assert to != null : "Event end time cannot be null";
+
+        if (from == null || to == null) {
+            throw new IllegalArgumentException(
+                    "Event start and end time must not be null."
+            );
+        }
+
+        if (!to.isAfter(from)) {
+            throw new IllegalArgumentException(
+                    "End time must be after start time."
+            );
+        }
 
         this.from = from;
         this.to = to;
@@ -53,7 +64,7 @@ public class Event extends Task {
 
     @Override
     public String toString() {
-        // If you always store datetime, this will format consistently.
+
         String fromStr = from.format(OUTPUT_DATETIME);
         String toStr = to.format(OUTPUT_DATETIME);
 

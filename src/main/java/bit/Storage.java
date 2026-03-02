@@ -71,7 +71,7 @@ public class Storage {
      * @return trimmed parts array of length 4, or null if invalid
      */
     private String[] splitLine(String line) {
-        String[] raw = line.split("\\s*\\|\\s*", -1);
+        String[] raw = line.split("\\s*\\|\\s*", EXPECTED_PARTS); // limit = 4
         if (raw.length != EXPECTED_PARTS) {
             return null;
         }
@@ -209,6 +209,10 @@ public class Storage {
         try {
             LocalDateTime from = LocalDateTime.parse(dt[0].trim(), Bit.INPUT_DATETIME);
             LocalDateTime to = LocalDateTime.parse(dt[1].trim(), Bit.INPUT_DATETIME);
+
+            if (!to.isAfter(from)) {
+                return null;
+            }
             return new Event(description, from, to);
         } catch (Exception ignored) {
             return null;
