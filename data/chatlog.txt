@@ -77,3 +77,23 @@
 2026-03-02T04:46:14.412902Z|ME|event test /from 2026-03-10 1800 /to 2026-03-10 1700
 2026-03-02T04:53:10.094592Z|ME|event test /from 2026-03-10 1800 /to 2026-03-10 1700
 2026-03-02T04:53:10.529598Z|BIT|OOPS! The end time must be AFTER the start time.\nExample: event meeting /from 2026-03-10 1800 /to 2026-03-10 1900
+2026-03-02T06:12:39.881207Z|ME|list
+2026-03-02T06:12:40.308031Z|BIT|Here are the tasks in your list:\n 1) [T][ ] read book chapter 2\n 2) [T][ ] hello\n 3) [T][ ] return 2 book\n 4) [D][ ] read book (by: Dec 02 2029)\n 5) [D][ ] eat lunch (by: Oct 19 2023)\n 6) [D][ ] return book (by: Dec 19 2023)\n 7) [D][ ] eat bread (by: Dec 30 2029)\n 8) [T][ ] help me\n 9) [T][ ] help\n10) [D][ ] submit report (by: Mar 01 2026, 11:59PM)
+2026-03-02T06:14:16.319371Z|ME|list
+2026-03-02T06:14:16.745542Z|BIT|Here are the tasks in your list:\n 1) [T][ ] read book chapter 2\n 2) [T][ ] hello\n 3) [T][ ] return 2 book\n 4) [D][ ] read book (by: Dec 02 2029)\n 5) [D][ ] eat lunch (by: Oct 19 2023)\n 6) [D][ ] return book (by: Dec 19 2023)\n 7) [D][ ] eat bread (by: Dec 30 2029)\n 8) [T][ ] help me\n 9) [T][ ] help\n10) [D][ ] submit report (by: Mar 01 2026, 11:59PM)
+2026-03-02T06:14:22.249507Z|ME|mark 1
+2026-03-02T06:14:22.678252Z|BIT|Nice! I've marked this task as done:\n  [T][X] read book chapter 2
+2026-03-02T06:14:24.473710Z|ME|list
+2026-03-02T06:14:24.902926Z|BIT|Here are the tasks in your list:\n 1) [T][X] read book chapter 2\n 2) [T][ ] hello\n 3) [T][ ] return 2 book\n 4) [D][ ] read book (by: Dec 02 2029)\n 5) [D][ ] eat lunch (by: Oct 19 2023)\n 6) [D][ ] return book (by: Dec 19 2023)\n 7) [D][ ] eat bread (by: Dec 30 2029)\n 8) [T][ ] help me\n 9) [T][ ] help\n10) [D][ ] submit report (by: Mar 01 2026, 11:59PM)
+2026-03-02T06:14:28.258031Z|ME|unmark 1
+2026-03-02T06:14:28.686324Z|BIT|OK, I've marked this task as not done yet:\n  [T][ ] read book chapter 2
+2026-03-02T06:14:29.835601Z|ME|list
+2026-03-02T06:14:30.261265Z|BIT|Here are the tasks in your list:\n 1) [T][ ] read book chapter 2\n 2) [T][ ] hello\n 3) [T][ ] return 2 book\n 4) [D][ ] read book (by: Dec 02 2029)\n 5) [D][ ] eat lunch (by: Oct 19 2023)\n 6) [D][ ] return book (by: Dec 19 2023)\n 7) [D][ ] eat bread (by: Dec 30 2029)\n 8) [T][ ] help me\n 9) [T][ ] help\n10) [D][ ] submit report (by: Mar 01 2026, 11:59PM)
+2026-03-02T06:14:36.575084Z|ME|update 2 hi
+2026-03-02T06:14:37.003041Z|BIT|Nice! I've updated this task:\n  [T][ ] hi
+2026-03-02T06:14:43.418896Z|ME|find bo
+2026-03-02T06:14:43.844304Z|BIT|Here are the matching tasks in your list:\n1. [T][ ] read book chapter 2\n2. [T][ ] return 2 book\n3. [D][ ] read book (by: Dec 02 2029)\n4. [D][ ] return book (by: Dec 19 2023)
+2026-03-02T06:14:57.309340Z|ME|update 9 bo
+2026-03-02T06:14:57.736317Z|BIT|Nice! I've updated this task:\n  [T][ ] bo
+2026-03-02T06:15:00.399415Z|ME|find bo
+2026-03-02T06:15:00.822497Z|BIT|Here are the matching tasks in your list:\n1. [T][ ] read book chapter 2\n2. [T][ ] return 2 book\n3. [D][ ] read book (by: Dec 02 2029)\n4. [D][ ] return book (by: Dec 19 2023)\n5. [T][ ] bo

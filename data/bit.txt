@@ -1,11 +1,10 @@
 T | 0 | read book chapter 2 | 
-T | 0 | hello | 
+T | 0 | hi | 
 T | 0 | return 2 book | 
 D | 0 | read book | 2029-12-02
 D | 0 | eat lunch | 2023-10-19
 D | 0 | return book | 2023-12-19
 D | 0 | eat bread | 2029-12-30
 T | 0 | help me | 
-T | 0 | help | 
+T | 0 | bo | 
 D | 0 | submit report | 2026-03-01 2359
-E | 0 | test event | 2026-03-10 1800 | 2026-03-10 1700

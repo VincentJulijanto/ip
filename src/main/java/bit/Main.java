@@ -79,7 +79,7 @@ public class Main extends Application {
 
     // ===== Layout constants =====
     /** Max bubble width as a fraction of the visible chat viewport width. */
-    private static final double BUBBLE_WIDTH_RATIO = 0.72;
+    private static final double BUBBLE_WIDTH_RATIO = 0.82;
 
     // ===== Responsive side gutter =====
     private static final double MIN_SIDE_GUTTER = 12;   // px
@@ -473,19 +473,12 @@ public class Main extends Application {
         VBox stack = new VBox(4, name, bubble);
         stack.setAlignment(isUser ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
 
-        // responsive side gutter (updates when window resizes)
-        Runnable applyResponsivePadding = () -> {
+        stack.paddingProperty().bind(Bindings.createObjectBinding(() -> {
             double g = currentSideGutter();
-            if (isUser) {
-                stack.setPadding(new Insets(2, 2, 2, g));     // leave gutter on LEFT for user
-            } else {
-                stack.setPadding(new Insets(2, g, 2, 2));     // leave gutter on RIGHT for bot
-            }
-        };
-        applyResponsivePadding.run();
-
-        // Keep it responsive for future resizes
-        scrollPane.viewportBoundsProperty().addListener((obs, oldV, newV) -> applyResponsivePadding.run());
+            return isUser
+                    ? new Insets(2, 2, 2, g)   // user: gutter on left
+                    : new Insets(2, g, 2, 2);  // bot: gutter on right
+        }, scrollPane.viewportBoundsProperty()));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

@@ -621,7 +621,7 @@ public class Bit {
         for (int i = 0; i < count; i++) {
             if (tasks[i].containsKeyword(keyword)) {
                 matchCount++;
-                sb.append(matchCount).append(". ").append(tasks[i]).append("\n");
+                sb.append(String.format("%2d) %s%n", i + 1, tasks[i]));
             }
         }
 
