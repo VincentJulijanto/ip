@@ -307,3 +307,16 @@
 2026-03-02T08:44:16.013120Z|ME|bye
 2026-03-02T08:44:16.436664Z|BIT|Bye. Hope to see you again soon!
 2026-03-02T08:44:16.437214Z|SESSION_END|BYE
+2026-03-02T08:49:48.003506Z|ME|todo
+2026-03-02T08:49:48.427574Z|BIT|Want to add something to your task list? 📝\nTell me what you need to do.\nExample: todo finish homework
+2026-03-02T08:49:51.495045Z|ME|find
+2026-03-02T08:49:51.927340Z|BIT|Looking for something? 🔍\nTell me the keyword and I'll search your tasks.\nExample: find meeting
+2026-03-02T08:49:57.413228Z|ME|event
+2026-03-02T08:49:57.848214Z|BIT|Planning an event? 📅\nTell me when it starts and ends.\nExample: event team meeting /from 2026-03-10 1800 /to 2026-03-10 1900
+2026-03-02T08:50:19.403418Z|ME|event wrong /from 2026-03-10 1800 /to 2026-03-10 1700
+2026-03-02T08:50:19.830895Z|BIT|Oops — the end time must be after the start time 🙂\nExample: event team meeting /from 2026-03-10 1800 /to 2026-03-10 1900
+2026-03-02T08:50:29.561508Z|ME|event meeting /from 2026-03-10
+2026-03-02T08:50:29.985454Z|BIT|I need a start and end time 🙂\nTry: event <description> /from <start> /to <end>\nExample: event team meeting /from 2026-03-10 1800 /to 2026-03-10 1900
+2026-03-02T08:50:44.320086Z|ME|bye
+2026-03-02T08:50:44.743447Z|BIT|Bye. Hope to see you again soon!
+2026-03-02T08:50:44.743898Z|SESSION_END|BYE

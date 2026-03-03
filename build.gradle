@@ -38,7 +38,7 @@ test {
 }
 
 application {
-    mainClass.set("bit.Launcher")
+    mainClass.set("bit.gui.Launcher")
 }
 
 javafx {
@@ -52,7 +52,7 @@ shadowJar {
     archiveVersion.set("")
 
     manifest {
-        attributes "Main-Class": "bit.Launcher"
+        attributes "Main-Class": "bit.gui.Launcher"
     }
 
     configurations = [project.configurations.runtimeClasspath]
